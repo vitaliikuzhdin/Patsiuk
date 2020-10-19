@@ -11,6 +11,7 @@
 #define MAX_DISTANCE 200
 
 int leftSonarSumm;
+int rightSoarSumm
 
 NewPing RIGHT_SONAR(RIGHT_TRIG, RIGHT_ECHO, MAX_DISTANCE);
 NewPing LEFT_SONAR(LEFT_TRIG, LEFT_ECHO, MAX_DISTANCE);
@@ -36,4 +37,12 @@ byte getLeftUS(){
     leftSonarSumm += LEFT_SONAR.ping_cm(); 
   }
   return leftSonarSumm / 10;
+}
+
+byte getRightUS(){
+  righttSonarSumm = 0;
+  for(byte i = 0; i < 10; i++){
+    rightSonarSumm += LEFT_SONAR.ping_cm(); 
+  }
+  return righttSonarSumm / 10;
 }
