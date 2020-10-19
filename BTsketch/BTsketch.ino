@@ -11,7 +11,7 @@ bool BTstop = false;
 
 void setup() {
   BTserial.begin(9600);
-  Serial.begin(9600);
+  Serial.begin(9600);//only for tests
 }
 
 void loop() {
