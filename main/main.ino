@@ -32,7 +32,7 @@ NewPing RIGHT_SONAR(RIGHT_TRIG, RIGHT_ECHO, MAX_DISTANCE);
 NewPing LEFT_SONAR(LEFT_TRIG, LEFT_ECHO, MAX_DISTANCE);
 SoftwareSerial BTserial(rx, tx);
 
-String commands = "";
+String commands;
 bool BTstop = false;
 char current_command;
 int rightSonarSumm;
