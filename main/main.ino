@@ -54,8 +54,8 @@ void setup(){
   pinMode(LEFT_SONAR_VCC, OUTPUT);
   pinMode(RIGHT_SONAR_VCC, OUTPUT);
   
-  digitalWrite(RIGHT_SONAR_VCC, HIGH);//питание правому ультразвуку
-  digitalWrite(LEFT_SONAR_VCC, HIGH);//питание левому ультразвуку
+  digitalWrite(RIGHT_SONAR_VCC, HIGH);//power for right sonar
+  digitalWrite(LEFT_SONAR_VCC, HIGH);//power for left sonar
   
   Serial.begin(9600);
   BTserial.begin(9600);
@@ -66,7 +66,6 @@ void setup(){
 
 void loop(){
   read_commands();
-  BTserial.end();
   Serial.println(commands);
 }
 
@@ -98,7 +97,7 @@ void read_commands(){
   }
 }
 
-//НАДО ПРОТЕСТИРОВАТЬ И ПОФИКСИТЬ!
+//needs a fix
 void right(){
   digitalWrite(RIGHT_FRONT_1, HIGH); 
   digitalWrite(RIGHT_FRONT_2, LOW);
