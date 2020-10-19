@@ -68,17 +68,12 @@ void setup(){
 
 void loop(){
   read_commands();
-  Serial.println(commands);
 }
 
 void mdFeedback(){
   while(BTserial){};
-  if ((analogRead(metal_input)) > 500){
-    BTserial.print(1);
-  }
-  else{
-    BTserial.println(0);
-  }
+    BTserial.println(analogRead(metal_input));
+  
 }
 
 byte getLeftUS(){
