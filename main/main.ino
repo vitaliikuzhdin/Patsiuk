@@ -39,6 +39,8 @@ int rightSonarSumm;
 int leftSonarSumm;
 
 void setup(){
+  pinMode(metal_input, INPUT);
+  
   pinMode(RIGHT_FRONT_1, OUTPUT);
   pinMode(RIGHT_FRONT_2, OUTPUT);
    
@@ -67,6 +69,16 @@ void setup(){
 void loop(){
   read_commands();
   Serial.println(commands);
+}
+
+void mdFeedback(){
+  while(BTserial){};
+  if ((analogRead(metal_input)) > 500){
+    BTserial.print(1);
+  }
+  else{
+    BTserial.println(0);
+  }
 }
 
 byte getLeftUS(){
