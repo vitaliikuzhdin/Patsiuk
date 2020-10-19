@@ -153,3 +153,19 @@ void back(){
   digitalWrite(LEFT_BACK_1, LOW);
   digitalWrite(LEFT_BACK_2, HIGH);
 }
+
+void stopCar(){
+
+  digitalWrite(RIGHT_FRONT_1, LOW); 
+  digitalWrite(RIGHT_FRONT_2, LOW);
+
+  digitalWrite(RIGHT_BACK_1, LOW);
+  digitalWrite(RIGHT_BACK_2, LOW);
+
+  digitalWrite(LEFT_FRONT_1, LOW);
+  digitalWrite(LEFT_FRONT_2, LOW);
+
+  digitalWrite(LEFT_BACK_1, LOW);
+  digitalWrite(LEFT_BACK_2, LOW);
+
+}
