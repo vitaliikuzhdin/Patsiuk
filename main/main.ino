@@ -67,13 +67,18 @@ void setup(){
 }
 
 void loop(){
+  
+  mdFeedback();
   read_commands();
 }
 
 void mdFeedback(){
   while(BTserial){};
-    BTserial.println(analogRead(metal_input));
-  
+    if(analogRead(metal_input) >= 80)
+      {
+        BTserial.println(analogRead(metal_input));
+      }
+
 }
 
 byte getLeftUS(){
