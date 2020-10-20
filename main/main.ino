@@ -1,7 +1,7 @@
 #include <NewPing.h>
 #include <SoftwareSerial.h>
 
-#define timeBetweenCommands 1000//test and fix, should be 10 cm
+#define timeBetweenCommands 1000//test and fix
 
 #define RIGHT_FRONT_1 4
 #define RIGHT_FRONT_2 5
@@ -74,18 +74,18 @@ void loop(){
   read_commands();
   
   while(finished_ride == false){
-    if (getRightUS > 20 and getLeftUS > 20){//checks if there is any obstacles
+    if (getRightUS() > 20 and getLeftUS() > 20){//checks if there is any obstacles
       //guides car
-      if (currentCommandChar == 'f'){
+      if (currentCommandChar() == 'f'){
         forward();
       }
-      else if (currentCommandChar == 'b'){
+      else if (currentCommandChar() == 'b'){
         back();
       }
-      else if (currentCommandChar == 'r'){
+      else if (currentCommandChar() == 'r'){
         right();
       }
-      else if (currentCommandChar == 'l'){
+      else if (currentCommandChar() == 'l'){
         left();
       }
       else{
@@ -93,7 +93,9 @@ void loop(){
       }
     }
     else{//avoid obstacles
-      
+      right();
+      forward();
+      left();
     }
     for (int i = 0; i < timeBetweenCommands; i++){
       while(!BTserial){};
