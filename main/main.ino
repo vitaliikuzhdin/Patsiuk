@@ -1,7 +1,7 @@
 #include <NewPing.h>
 #include <SoftwareSerial.h>
 
-#define timeBetweenCommands 1000//test and fix
+#define timeBetweenCommands 1000//test and fix, should be 10 cm
 
 #define RIGHT_FRONT_1 4
 #define RIGHT_FRONT_2 5
