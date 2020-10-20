@@ -1,6 +1,8 @@
 #include <NewPing.h>
 #include <SoftwareSerial.h>
 
+#define timeBetweenCommands 1000//test and fix
+
 #define RIGHT_FRONT_1 4
 #define RIGHT_FRONT_2 5
 
@@ -32,11 +34,12 @@ NewPing RIGHT_SONAR(RIGHT_TRIG, RIGHT_ECHO, MAX_DISTANCE);
 NewPing LEFT_SONAR(LEFT_TRIG, LEFT_ECHO, MAX_DISTANCE);
 SoftwareSerial BTserial(rx, tx);
 
-String commands;
+String strCommands = "";
 bool BTstop = false;
 char current_command;
 int rightSonarSumm;
 int leftSonarSumm;
+bool finished_ride = false;
 
 void setup(){
   pinMode(metal_input, INPUT);
@@ -56,24 +59,54 @@ void setup(){
   pinMode(LEFT_SONAR_VCC, OUTPUT);
   pinMode(RIGHT_SONAR_VCC, OUTPUT);
   
-  digitalWrite(RIGHT_SONAR_VCC, HIGH);//power for right sonar
-  digitalWrite(LEFT_SONAR_VCC, HIGH);//power for left sonar
+  digitalWrite(RIGHT_SONAR_VCC, HIGH);//питание правому ультразвуку
+  digitalWrite(LEFT_SONAR_VCC, HIGH);//питание левому ультразвуку
   
   Serial.begin(9600);
   BTserial.begin(9600);
 
   while(!BTserial){};
   while(!Serial){};
+  BTserial.print('r'); //r satnds for ready
 }
 
 void loop(){
   read_commands();
+  
+  while(finished_ride == false){
+    if (getRightUS > 20 and getLeftUS > 20){//checks if there is any obstacles
+      //guides car
+      if (currentCommandChar == 'f'){
+        forward();
+      }
+      else if (currentCommandChar == 'b'){
+        back();
+      }
+      else if (currentCommandChar == 'r'){
+        right();
+      }
+      else if (currentCommandChar == 'l'){
+        left();
+      }
+      else{
+        finished_ride = true;
+      }
+    }
+    else{//avoid obstacles
+      
+    }
+    for (int i = 0; i < timeBetweenCommands; i++){
+      while(!BTserial){};
+      BTserial.print(analogRead(metal_input));//send feedback of md
+      delay(1);
+    }
+  }
 }
 
-void mdFeedback(){
-  while(BTserial){};
-    BTserial.println(analogRead(metal_input));
-  
+char currentCommandChar(){
+  for (byte i = 0; i < strCommands.length(); i++){
+    return strCommands.charAt(i);  
+  }
 }
 
 byte getLeftUS(){
@@ -96,15 +129,18 @@ void read_commands(){
   while (BTstop == false){
     while (BTserial.available() > 0){
       current_command = BTserial.read();
-      if (current_command != 's')
-        commands += current_command;
-      else
+      if (current_command != 's'){
+        strCommands += current_command;
+      }
+      else{
+        strCommands += current_command;
         BTstop = true;
+      }
     }
   }
 }
 
-//needs a fix
+//НАДО ПРОТЕСТИРОВАТЬ И ПОФИКСИТЬ!
 void right(){
   digitalWrite(RIGHT_FRONT_1, HIGH); 
   digitalWrite(RIGHT_FRONT_2, LOW);
@@ -117,6 +153,8 @@ void right(){
 
   digitalWrite(LEFT_BACK_1, LOW);
   digitalWrite(LEFT_BACK_2, HIGH);
+
+  BTserial.print('r');
 }
 
 void left(){
@@ -131,6 +169,8 @@ void left(){
 
   digitalWrite(LEFT_BACK_1, LOW);
   digitalWrite(LEFT_BACK_2, HIGH);
+
+  BTserial.print('l');
 }
 
 void forward(){
@@ -145,6 +185,8 @@ void forward(){
 
   digitalWrite(LEFT_BACK_1, LOW);
   digitalWrite(LEFT_BACK_2, HIGH);
+
+  BTserial.print('f');
 }
 
 void back(){
@@ -159,20 +201,6 @@ void back(){
 
   digitalWrite(LEFT_BACK_1, LOW);
   digitalWrite(LEFT_BACK_2, HIGH);
-}
 
-void stopCar(){
-
-  digitalWrite(RIGHT_FRONT_1, LOW); 
-  digitalWrite(RIGHT_FRONT_2, LOW);
-
-  digitalWrite(RIGHT_BACK_1, LOW);
-  digitalWrite(RIGHT_BACK_2, LOW);
-
-  digitalWrite(LEFT_FRONT_1, LOW);
-  digitalWrite(LEFT_FRONT_2, LOW);
-
-  digitalWrite(LEFT_BACK_1, LOW);
-  digitalWrite(LEFT_BACK_2, LOW);
-
+  BTserial.print('b');
 }
