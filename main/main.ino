@@ -111,18 +111,18 @@ char currentCommandChar(){
 
 byte getLeftUS(){
   int leftSonarSumm = 0;
-  for(byte i = 0; i < 10; i++){
+  for(byte i = 0; i < 20; i++){
     leftSonarSumm += LEFT_SONAR.ping_cm(); 
   }
-  return leftSonarSumm / 10;
+  return leftSonarSumm / 20;
 }
 
 byte getRightUS(){
   int rightSonarSumm = 0;
-  for(byte i = 0; i < 10; i++){
+  for(byte i = 0; i < 20; i++){
     rightSonarSumm += RIGHT_SONAR.ping_cm(); 
   }
-  return rightSonarSumm / 10;
+  return rightSonarSumm / 20;
 }
 
 void read_commands(){
