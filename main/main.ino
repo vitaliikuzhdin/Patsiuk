@@ -36,10 +36,9 @@ SoftwareSerial BTserial(rx, tx);
 
 String strCommands = "";
 bool BTstop = false;
-char current_command;
-int rightSonarSumm;
-int leftSonarSumm;
+char BTcurrent_command;
 bool finished_ride = false;
+byte commandSerialNum = 0;
 
 void setup(){
   pinMode(metal_input, INPUT);
@@ -106,13 +105,12 @@ void loop(){
 }
 
 char currentCommandChar(){
-  for (byte i = 0; i < strCommands.length(); i++){
-    return strCommands.charAt(i);  
-  }
+  return strCommands.charAt(commandSerialNum);
+  commandSerialNum++;
 }
 
 byte getLeftUS(){
-  leftSonarSumm = 0;
+  int leftSonarSumm = 0;
   for(byte i = 0; i < 10; i++){
     leftSonarSumm += LEFT_SONAR.ping_cm(); 
   }
@@ -120,7 +118,7 @@ byte getLeftUS(){
 }
 
 byte getRightUS(){
-  rightSonarSumm = 0;
+  int rightSonarSumm = 0;
   for(byte i = 0; i < 10; i++){
     rightSonarSumm += RIGHT_SONAR.ping_cm(); 
   }
@@ -130,12 +128,12 @@ byte getRightUS(){
 void read_commands(){
   while (BTstop == false){
     while (BTserial.available() > 0){
-      current_command = BTserial.read();
-      if (current_command != 's'){
-        strCommands += current_command;
+      BTcurrent_command = BTserial.read();
+      if (BTcurrent_command != 's'){
+        strCommands += BTcurrent_command;
       }
       else{
-        strCommands += current_command;
+        strCommands += BTcurrent_command;
         BTstop = true;
       }
     }
