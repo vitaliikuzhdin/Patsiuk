@@ -5,25 +5,27 @@
 
 SoftwareSerial BTserial(rx, tx);//rx, tx
 
-char current_command;
+char BTcurrent_command;
 String strCommands;
 bool BTstop = false;
 
 void setup() {
   BTserial.begin(9600);
   Serial.begin(9600);//only for tests
+  while(!Serial){};//only for tests
+  while(!BTserial){};
 }
 
 void loop() {
   while (BTstop == false){
     while (BTserial.available() > 0){
-      current_command = BTserial.read();
-      if (current_command != 's'){
-        commands += current_command;}
+      BTcurrent_command = BTserial.read();
+      if (BTcurrent_command != 's'){
+        strCommands += BTcurrent_command;}
       else{
         BTstop = true;
-        commands += current_command;}
+        strCommands += BTcurrent_command;}
     }
   }
-  Serial.println(commands);//only for tests
+  Serial.println(strCommands);//only for tests
 }
