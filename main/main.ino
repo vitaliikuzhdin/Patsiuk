@@ -34,7 +34,7 @@ NewPing RIGHT_SONAR(RIGHT_TRIG, RIGHT_ECHO, MAX_DISTANCE);
 NewPing LEFT_SONAR(LEFT_TRIG, LEFT_ECHO, MAX_DISTANCE);
 SoftwareSerial BTserial(rx, tx);
 
-String strCommands = "";
+String strCommands;
 bool BTstop = false;
 char BTcurrent_command;
 bool finished_ride = false;
@@ -58,8 +58,8 @@ void setup(){
   pinMode(LEFT_SONAR_VCC, OUTPUT);
   pinMode(RIGHT_SONAR_VCC, OUTPUT);
   
-  digitalWrite(RIGHT_SONAR_VCC, HIGH);//питание правому ультразвуку
-  digitalWrite(LEFT_SONAR_VCC, HIGH);//питание левому ультразвуку
+  digitalWrite(RIGHT_SONAR_VCC, HIGH);//power for right sonar
+  digitalWrite(LEFT_SONAR_VCC, HIGH);//power for left sonar
   
   Serial.begin(9600);
   BTserial.begin(9600);
@@ -98,7 +98,7 @@ void loop(){
     }
     for (int i = 0; i < timeBetweenCommands; i++){
       while(!BTserial){};
-      BTserial.print(analogRead(metal_input));//send feedback of md
+      BTserial.print(analogRead(metal_input));//send feedback of metal detector
       delay(1);
     }
   }
@@ -140,7 +140,7 @@ void read_commands(){
   }
 }
 
-//НАДО ПРОТЕСТИРОВАТЬ И ПОФИКСИТЬ!
+//needs a fix
 void right(){
   digitalWrite(RIGHT_FRONT_1, HIGH); 
   digitalWrite(RIGHT_FRONT_2, LOW);
