@@ -36,7 +36,6 @@ SoftwareSerial BTserial(rx, tx);
 
 String strCommands;
 bool BTstop = false;
-char BTcurrent_command;
 bool finished_ride = false;
 byte commandSerialNum = 0;
 
@@ -128,8 +127,7 @@ byte getRightUS(){
 void read_commands(){
   while (BTstop == false){
     while (BTserial.available() > 0){
-      BTcurrent_command = BTserial.read();
-      if (BTcurrent_command != 's'){
+      if (BTserial.read() != 's'){
         strCommands += BTcurrent_command;
       }
       else{
