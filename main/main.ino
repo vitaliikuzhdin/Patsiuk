@@ -128,10 +128,10 @@ void read_commands(){
   while (BTstop == false){
     while (BTserial.available() > 0){
       if (BTserial.read() != 's'){
-        strCommands += BTcurrent_command;
+        strCommands += BTserial.read();
       }
       else{
-        strCommands += BTcurrent_command;
+        strCommands += BTserial.read();
         BTstop = true;
       }
     }
