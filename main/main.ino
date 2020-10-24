@@ -1,7 +1,7 @@
 #include <NewPing.h>
 #include <SoftwareSerial.h>
 
-#define timeBetweenCommands 1000//test and fix
+#define timeBetweenCommands 1000//must be 10 cm
 
 #define RIGHT_FRONT_1 4
 #define RIGHT_FRONT_2 5
@@ -38,6 +38,7 @@ String strCommands;
 bool BTstop = false;
 bool finished_ride = false;
 byte commandSerialNum = 0;
+unsigned long previousTime = 0;
 
 void setup(){
   pinMode(metal_input, INPUT);
@@ -57,15 +58,14 @@ void setup(){
   pinMode(LEFT_SONAR_VCC, OUTPUT);
   pinMode(RIGHT_SONAR_VCC, OUTPUT);
   
-  digitalWrite(RIGHT_SONAR_VCC, HIGH);//power for right sonar
-  digitalWrite(LEFT_SONAR_VCC, HIGH);//power for left sonar
+  digitalWrite(RIGHT_SONAR_VCC, HIGH);//питание правому ультразвуку
+  digitalWrite(LEFT_SONAR_VCC, HIGH);//питание левому ультразвуку
   
   Serial.begin(9600);
   BTserial.begin(9600);
 
   while(!BTserial){};
   while(!Serial){};
-  BTserial.print('r'); //r satnds for ready
 }
 
 void loop(){
@@ -97,8 +97,8 @@ void loop(){
     }
     for (int i = 0; i < timeBetweenCommands; i++){
       while(!BTserial){};
-      BTserial.print(analogRead(metal_input));//send feedback of metal detector
-      delay(1);
+      BTserial.print(analogRead(metal_input));//send feedback of md
+      delay(10);
     }
   }
 }
@@ -127,7 +127,10 @@ byte getRightUS(){
 void read_commands(){
   while (BTstop == false){
     while (BTserial.available() > 0){
-      if (BTserial.read() != 's'){
+      if (BTserial.read() == 'c'){
+        strCommands = "";
+      }
+      else if (BTserial.read() != 's'){
         strCommands += BTserial.read();
       }
       else{
