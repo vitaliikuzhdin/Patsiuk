@@ -103,8 +103,7 @@ void loop(){
 }
 
 char currentCommandChar(){
-  return strCommands.charAt(commandSerialNum);
-  commandSerialNum++;
+  return strCommands.charAt(commandSerialNum++);
 }
 
 byte getLeftUS(){
