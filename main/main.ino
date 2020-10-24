@@ -26,7 +26,7 @@
 #define rx 3
 #define tx 2
 
-#define MAX_DISTANCE 200
+#define MAX_DISTANCE 100
 
 #define metal_input A5
 
@@ -38,7 +38,6 @@ String strCommands;
 bool BTstop = false;
 bool finished_ride = false;
 byte commandSerialNum = 0;
-unsigned long previousTime = 0;
 
 void setup(){
   pinMode(metal_input, INPUT);
@@ -127,11 +126,14 @@ byte getRightUS(){
 void read_commands(){
   while (BTstop == false){
     while (BTserial.available() > 0){
-      if (BTserial.read() == 'c'){
+      char current_command = BTserial.read();
+      if (current_command == 'c'){
         strCommands = "";
       }
-      else if (BTserial.read() != 's'){
-        strCommands += BTserial.read();
+      else if (current_command != 's'){
+        for(byte i = 0; i < 10; i++){//because 1 command = 10 cm
+          strCommands += current_command;
+        }
       }
       else{
         strCommands += BTserial.read();
