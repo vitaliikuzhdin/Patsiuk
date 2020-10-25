@@ -43,7 +43,6 @@ GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
 GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
 String strCommands;
-bool BTstop = false;
 bool finished_ride = false;
 byte commandSerialNum = 0;
 
@@ -150,6 +149,7 @@ byte getRightUS(){
 }
 
 void read_commands(){
+  bool BTstop = false;
   while (BTstop == false){
     while (BTserial.available() > 0){
       char current_command = BTserial.read();
