@@ -4,25 +4,25 @@
 
 #define timeBetweenCommands 1000//must be 10 cm
 
-#define RIGHT_FRONT_1 4
-#define RIGHT_FRONT_2 5
+#define RIGHT_FRONT_D 4
+#define RIGHT_FRONT_PWM 5
 
-#define RIGHT_BACK_1 A4
-#define RIGHT_BACK_2 A3
+#define RIGHT_BACK_PWM 9
+#define RIGHT_BACK_D A4
 
-#define LEFT_FRONT_1 6
-#define LEFT_FRONT_2 7
+#define LEFT_FRONT_PWM 6
+#define LEFT_FRONT_D 7
 
-#define LEFT_BACK_1 A2
-#define LEFT_BACK_2 A1
+#define LEFT_BACK_PWM 10
+#define LEFT_BACK_D A3
 
-#define RIGHT_TRIG 9
-#define RIGHT_ECHO 10
+#define RIGHT_TRIG 11
+#define RIGHT_ECHO 12
 #define RIGHT_SONAR_VCC 8
 
-#define LEFT_TRIG 12
-#define LEFT_ECHO 13
-#define LEFT_SONAR_VCC 11
+#define LEFT_TRIG A2
+#define LEFT_ECHO A1
+#define LEFT_SONAR_VCC 13
 
 #define rx 3
 #define tx 2
