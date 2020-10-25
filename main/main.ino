@@ -4,8 +4,8 @@
 
 #define timeBetweenCommands 1000//must be 10 cm
 
-#define RIGHT_FRONT_D 4
 #define RIGHT_FRONT_PWM 5
+#define RIGHT_FRONT_D 4
 
 #define RIGHT_BACK_PWM 9
 #define RIGHT_BACK_D A4
@@ -33,7 +33,13 @@
 
 NewPing RIGHT_SONAR(RIGHT_TRIG, RIGHT_ECHO, MAX_DISTANCE);
 NewPing LEFT_SONAR(LEFT_TRIG, LEFT_ECHO, MAX_DISTANCE);
+
 SoftwareSerial BTserial(rx, tx);
+
+GMotor RIGHT_FRONT(DRIVER2WIRE, RIGHT_FRONT_D, RIGHT_FRONT_PWM);
+GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM);
+GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM);
+GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM);
 
 String strCommands;
 bool BTstop = false;
@@ -43,29 +49,50 @@ byte commandSerialNum = 0;
 void setup(){
   pinMode(metal_input, INPUT);
   
-  pinMode(RIGHT_FRONT_1, OUTPUT);
-  pinMode(RIGHT_FRONT_2, OUTPUT);
+  pinMode(RIGHT_FRONT_D, OUTPUT);
+  pinMode(RIGHT_FRONT_PWM, OUTPUT);
    
-  pinMode(RIGHT_BACK_1, OUTPUT);
-  pinMode(RIGHT_BACK_2, OUTPUT);
+  pinMode(RIGHT_BACK_D, OUTPUT);
+  pinMode(RIGHT_BACK_PWM, OUTPUT);
 
-  pinMode(LEFT_FRONT_1, OUTPUT);
-  pinMode(LEFT_FRONT_2, OUTPUT);
+  pinMode(LEFT_FRONT_D, OUTPUT);
+  pinMode(LEFT_FRONT_PWM, OUTPUT);
 
-  pinMode(LEFT_BACK_1, OUTPUT);
-  pinMode(LEFT_BACK_2, OUTPUT);
+  pinMode(LEFT_BACK_D, OUTPUT);
+  pinMode(LEFT_BACK_PWM, OUTPUT);
   
-  pinMode(LEFT_SONAR_VCC, OUTPUT);
   pinMode(RIGHT_SONAR_VCC, OUTPUT);
-  
+  pinMode(LEFT_SONAR_VCC, OUTPUT);
+
   digitalWrite(RIGHT_SONAR_VCC, HIGH);//power for right sonar
   digitalWrite(LEFT_SONAR_VCC, HIGH);//power for left sonar
-  
-  Serial.begin(9600);
-  BTserial.begin(9600);
 
+  RIGHT_FRONT.setResolution(8);
+  RIGHT_BACK.setResolution(8);
+  LEFT_FRONT.setResolution(8);
+  LEFT_BACK.setResolution(8);
+
+  //test and fix
+  RIGHT_FRONT.setDirection(NORMAL);
+  RIGHT_BACK.setDirection(NORMAL);
+  LEFT_FRONT.setDirection(NORMAL);
+  LEFT_BACK.setDirection(NORMAL);
+
+  //test and fix
+  RIGHT_FRONT.setMinDuty(1);
+  RIGHT_BACK.setMinDuty(1);
+  LEFT_FRONT.setMinDuty(1);
+  LEFT_BACK.setMinDuty(1);
+  
+  RIGHT_FRONT.setMode(AUTO);
+  RIGHT_BACK.setMode(AUTO);
+  LEFT_FRONT.setMode(AUTO);
+  LEFT_BACK.setMode(AUTO);
+  
+  Serial.begin(9600);//only for tests
+  while(!Serial){};//only for tests
+  BTserial.begin(9600); 
   while(!BTserial){};
-  while(!Serial){};
 }
 
 void loop(){
@@ -145,65 +172,37 @@ void read_commands(){
 
 //needs a fix
 void right(){
-  digitalWrite(RIGHT_FRONT_1, HIGH); 
-  digitalWrite(RIGHT_FRONT_2, LOW);
-
-  digitalWrite(RIGHT_BACK_1, HIGH);
-  digitalWrite(RIGHT_BACK_2, LOW);
-
-  digitalWrite(LEFT_FRONT_1, LOW);
-  digitalWrite(LEFT_FRONT_2, HIGH);
-
-  digitalWrite(LEFT_BACK_1, LOW);
-  digitalWrite(LEFT_BACK_2, HIGH);
+  RIGHT_FRONT.smoothTick(-255);
+  RIGHT_BACK.smoothTick(-255);
+  LEFT_FRONT.smoothTick(255);
+  LEFT_BACK.smoothTick(255);
 
   BTserial.print('r');
 }
 
 void left(){
-  digitalWrite(RIGHT_FRONT_1, HIGH); 
-  digitalWrite(RIGHT_FRONT_2, LOW);
-
-  digitalWrite(RIGHT_BACK_1, HIGH);
-  digitalWrite(RIGHT_BACK_2, LOW);
-
-  digitalWrite(LEFT_FRONT_1, LOW);
-  digitalWrite(LEFT_FRONT_2, HIGH);
-
-  digitalWrite(LEFT_BACK_1, LOW);
-  digitalWrite(LEFT_BACK_2, HIGH);
+  RIGHT_FRONT.smoothTick(255);
+  RIGHT_BACK.smoothTick(255);
+  LEFT_FRONT.smoothTick(-255);
+  LEFT_BACK.smoothTick(-255);
 
   BTserial.print('l');
 }
 
 void forward(){
-  digitalWrite(RIGHT_FRONT_1, HIGH); 
-  digitalWrite(RIGHT_FRONT_2, LOW);
-
-  digitalWrite(RIGHT_BACK_1, HIGH);
-  digitalWrite(RIGHT_BACK_2, LOW);
-
-  digitalWrite(LEFT_FRONT_1, LOW);
-  digitalWrite(LEFT_FRONT_2, HIGH);
-
-  digitalWrite(LEFT_BACK_1, LOW);
-  digitalWrite(LEFT_BACK_2, HIGH);
-
+  RIGHT_FRONT.smoothTick(255);
+  RIGHT_BACK.smoothTick(255);
+  LEFT_FRONT.smoothTick(255);
+  LEFT_BACK.smoothTick(255);
+  
   BTserial.print('f');
 }
 
 void back(){
-  digitalWrite(RIGHT_FRONT_1, HIGH); 
-  digitalWrite(RIGHT_FRONT_2, LOW);
-
-  digitalWrite(RIGHT_BACK_1, HIGH);
-  digitalWrite(RIGHT_BACK_2, LOW);
-
-  digitalWrite(LEFT_FRONT_1, LOW);
-  digitalWrite(LEFT_FRONT_2, HIGH);
-
-  digitalWrite(LEFT_BACK_1, LOW);
-  digitalWrite(LEFT_BACK_2, HIGH);
+  RIGHT_FRONT.smoothTick(-255);
+  RIGHT_BACK.smoothTick(-255);
+  LEFT_FRONT.smoothTick(-255);
+  LEFT_BACK.smoothTick(-255);
 
   BTserial.print('b');
 }
