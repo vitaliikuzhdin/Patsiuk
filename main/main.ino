@@ -16,16 +16,16 @@
 #define LEFT_BACK_PWM 10
 #define LEFT_BACK_D A3
 
-#define RIGHT_TRIG 11
-#define RIGHT_ECHO 12
-#define RIGHT_SONAR_VCC 8
+#define RIGHT_TRIG 3
+#define RIGHT_ECHO 8
+#define RIGHT_SONAR_VCC 2
 
-#define LEFT_TRIG A2
-#define LEFT_ECHO A1
-#define LEFT_SONAR_VCC 13
+#define LEFT_TRIG 13
+#define LEFT_ECHO A0
+#define LEFT_SONAR_VCC 12
 
-#define rx 3
-#define tx 2
+#define rx A1
+#define tx A2
 
 #define MAX_DISTANCE 100
 
