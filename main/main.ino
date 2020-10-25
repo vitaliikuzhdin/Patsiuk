@@ -73,10 +73,10 @@ void setup(){
   LEFT_FRONT.setResolution(8);
   LEFT_BACK.setResolution(8);
 
-  RIGHT_FRONT.setDirection(REVERSE);
-  RIGHT_BACK.setDirection(REVERSE);
-  LEFT_FRONT.setDirection(NORMAL);
-  LEFT_BACK.setDirection(REVERSE);
+  RIGHT_FRONT.setDirection(NORMAL);
+  RIGHT_BACK.setDirection(NORMAL);
+  LEFT_FRONT.setDirection(REVERSE);
+  LEFT_BACK.setDirection(NORMAL);
 
   RIGHT_FRONT.setMinDuty(minDuty);
   RIGHT_BACK.setMinDuty(minDuty);
