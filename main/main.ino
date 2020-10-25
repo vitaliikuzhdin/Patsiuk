@@ -1,5 +1,5 @@
-#include <NewPing.h>
-#include <SoftwareSerial.h>
+#include <NewPing.h>//documentation: https://bitbucket.org/teckel12/arduino-new-ping/wiki/Home
+#include <SoftwareSerial.h>//documentation: https://github.com/PaulStoffregen/SoftwareSerial
 #include <GyverMotor.h>//documentation: https://alexgyver.ru/gyvermotor/
 
 #define timeBetweenCommands 1000//must be 10 cm
