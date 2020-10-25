@@ -43,7 +43,6 @@ GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
 GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
 String strCommands;
-bool finished_ride = false;
 byte commandSerialNum = 0;
 
 void setup(){
@@ -95,7 +94,7 @@ void setup(){
 
 void loop(){
   read_commands();
-  
+  bool finished_ride = false;
   while(finished_ride == false){
     if (getRightUS() > 20 and getLeftUS() > 20){//checks if there is any obstacles
       //guides car
