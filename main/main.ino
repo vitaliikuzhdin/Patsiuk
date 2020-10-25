@@ -3,6 +3,7 @@
 #include <GyverMotor.h>//documentation: https://alexgyver.ru/gyvermotor/
 
 #define timeBetweenCommands 1000//must be 10 cm
+#define minDuty 150
 
 #define RIGHT_FRONT_PWM 5
 #define RIGHT_FRONT_D 4
@@ -36,10 +37,10 @@ NewPing LEFT_SONAR(LEFT_TRIG, LEFT_ECHO, MAX_DISTANCE);
 
 SoftwareSerial BTserial(rx, tx);
 
-GMotor RIGHT_FRONT(DRIVER2WIRE, RIGHT_FRONT_D, RIGHT_FRONT_PWM);
-GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM);
-GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM);
-GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM);
+GMotor RIGHT_FRONT(DRIVER2WIRE, RIGHT_FRONT_D, RIGHT_FRONT_PWM, HIGH);
+GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, HIGH);
+GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
+GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
 String strCommands;
 bool BTstop = false;
@@ -72,17 +73,15 @@ void setup(){
   LEFT_FRONT.setResolution(8);
   LEFT_BACK.setResolution(8);
 
-  //test and fix
-  RIGHT_FRONT.setDirection(NORMAL);
-  RIGHT_BACK.setDirection(NORMAL);
+  RIGHT_FRONT.setDirection(REVERSE);
+  RIGHT_BACK.setDirection(REVERSE);
   LEFT_FRONT.setDirection(NORMAL);
-  LEFT_BACK.setDirection(NORMAL);
+  LEFT_BACK.setDirection(REVERSE);
 
-  //test and fix
-  RIGHT_FRONT.setMinDuty(1);
-  RIGHT_BACK.setMinDuty(1);
-  LEFT_FRONT.setMinDuty(1);
-  LEFT_BACK.setMinDuty(1);
+  RIGHT_FRONT.setMinDuty(minDuty);
+  RIGHT_BACK.setMinDuty(minDuty);
+  LEFT_FRONT.setMinDuty(minDuty);
+  LEFT_BACK.setMinDuty(minDuty);
   
   RIGHT_FRONT.setMode(AUTO);
   RIGHT_BACK.setMode(AUTO);
@@ -170,7 +169,6 @@ void read_commands(){
   }
 }
 
-//needs a fix
 void right(){
   RIGHT_FRONT.smoothTick(-255);
   RIGHT_BACK.smoothTick(-255);
