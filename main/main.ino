@@ -45,6 +45,10 @@ GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 String strCommands;
 byte commandSerialNum = 0;
 
+int angle = 0;
+int xTravel = 0;
+int yTravel = 0;
+
 void setup(){
   pinMode(metal_input, INPUT);
   
@@ -111,7 +115,16 @@ void loop(){
         left();
       }
       else{
-        finished_ride = true;
+        if (angle >= 0){
+          while (angle >= 360){
+            angle -= 360;  
+          }
+        }
+        else{
+          while(angle <= -360){
+            angle += 360;
+          }
+        }
       }
     }
     else{//avoid obstacles
@@ -175,6 +188,8 @@ void right(){
   LEFT_BACK.smoothTick(255);
 
   BTserial.print('r');
+
+  angle += 90;
 }
 
 void left(){
@@ -184,6 +199,8 @@ void left(){
   LEFT_BACK.smoothTick(-255);
 
   BTserial.print('l');
+
+  angle -= 90;
 }
 
 void forward(){
@@ -193,6 +210,19 @@ void forward(){
   LEFT_BACK.smoothTick(255);
   
   BTserial.print('f');
+
+  if (angle == 0){
+   yTravel++;  
+  }
+  else if (angle == 90){
+    xTravel++;  
+  }
+  else if (angle == 180){
+    yTravel--;  
+  }
+  else{
+     xTravel--; 
+  }
 }
 
 void back(){
