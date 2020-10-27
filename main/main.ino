@@ -1,5 +1,5 @@
 #include <NewPing.h>//documentation: https://bitbucket.org/teckel12/arduino-new-ping/wiki/Home
-#include <SoftwareSerial.h>//documentation: https://github.com/PaulStoffregen/SoftwareSerial
+#include <NeoSWSerial.h>//documentation: https://github.com/SlashDevin/NeoSWSerial
 #include <GyverMotor.h>//documentation: https://alexgyver.ru/gyvermotor/
 
 #define timeBetweenCommands 1000//must be 10 cm
@@ -35,7 +35,7 @@
 NewPing RIGHT_SONAR(RIGHT_TRIG, RIGHT_ECHO, MAX_DISTANCE);
 NewPing LEFT_SONAR(LEFT_TRIG, LEFT_ECHO, MAX_DISTANCE);
 
-SoftwareSerial BTserial(rx, tx);
+NeoSWSerial BTserial(rx, tx);
 
 GMotor RIGHT_FRONT(DRIVER2WIRE, RIGHT_FRONT_D, RIGHT_FRONT_PWM, HIGH);
 GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, HIGH);
@@ -91,7 +91,7 @@ void setup(){
   LEFT_BACK.setMode(AUTO);
   
   Serial.begin(9600);//only for tests
-  BTserial.begin(9600); 
+  BTserial.begin(38400); 
 }
 
 void loop(){
