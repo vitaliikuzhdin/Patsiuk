@@ -91,9 +91,7 @@ void setup(){
   LEFT_BACK.setMode(AUTO);
   
   Serial.begin(9600);//only for tests
-  while(!Serial){};//only for tests
   BTserial.begin(9600); 
-  while(!BTserial){};
 }
 
 void loop(){
