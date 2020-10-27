@@ -43,11 +43,11 @@ GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
 GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
 String strCommands;
-byte commandSerialNum = 0;
+byte commandSerialNum;
 
-int angle = 0;
-int xTravel = 0;
-int yTravel = 0;
+int angle;
+int xTravel;
+int yTravel;
 
 void setup(){
   pinMode(metal_input, INPUT);
