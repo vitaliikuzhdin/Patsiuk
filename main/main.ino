@@ -2,8 +2,10 @@
 #include <NeoSWSerial.h>//documentation: https://github.com/SlashDevin/NeoSWSerial
 #include <GyverMotor.h>//documentation: https://alexgyver.ru/gyvermotor/
 
-#define timeBetweenCommands 1000//must be 10 cm
-#define minDuty 150
+//test and fix
+#define timeForRiding 100//must be 10 cm
+#define timeForTurning 100//must be 90 degrees
+#define minDuty 200
 
 #define RIGHT_FRONT_PWM 5
 #define RIGHT_FRONT_D 4
@@ -102,37 +104,40 @@ void loop(){
       //guides car
       if (currentCommandChar() == 'f'){
         forward();
+        for (int i = 0; i < timeForRiding; i++){
+          BTserial.print(analogRead(metal_input));//send feedback of md
+          delay(1);
+        }
       }
       else if (currentCommandChar() == 'b'){
         back();
+        for (int i = 0; i < timeForRiding; i++){
+          BTserial.print(analogRead(metal_input));//send feedback of md
+          delay(1);
+        }
       }
       else if (currentCommandChar() == 'r'){
         right();
+        for (int i = 0; i < timeForTurning; i++){
+          BTserial.print(analogRead(metal_input));//send feedback of md
+          delay(1);
+        }
       }
       else if (currentCommandChar() == 'l'){
         left();
+        for (int i = 0; i < timeForTurning; i++){
+          BTserial.print(analogRead(metal_input));//send feedback of md
+          delay(1);
+        }
       }
       else{
-        if (angle >= 0){
-          while (angle >= 360){
-            angle -= 360;  
-          }
-        }
-        else{
-          while(angle <= -360){
-            angle += 360;
-          }
-        }
+        //return home
       }
     }
     else{//avoid obstacles
       right();
       forward();
       left();
-    }
-    for (int i = 0; i < timeBetweenCommands; i++){
-      BTserial.print(analogRead(metal_input));//send feedback of md
-      delay(10);
     }
   }
 }
