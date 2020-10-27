@@ -131,7 +131,6 @@ void loop(){
       left();
     }
     for (int i = 0; i < timeBetweenCommands; i++){
-      while(!BTserial){};
       BTserial.print(analogRead(metal_input));//send feedback of md
       delay(10);
     }
@@ -188,6 +187,9 @@ void right(){
   BTserial.print('r');
 
   angle += 90;
+  if (angle == 360){
+    angle = 0;  
+  }
 }
 
 void left(){
@@ -199,6 +201,9 @@ void left(){
   BTserial.print('l');
 
   angle -= 90;
+  if (angle == 360){
+    angle = 0;  
+  }
 }
 
 void forward(){
@@ -218,7 +223,7 @@ void forward(){
   else if (angle == 180){
     yTravel--;  
   }
-  else{
+  else{//angle == 270
      xTravel--; 
   }
 }
@@ -230,4 +235,17 @@ void back(){
   LEFT_BACK.smoothTick(-255);
 
   BTserial.print('b');
+
+  if (angle == 0){
+   yTravel--;  
+  }
+  else if (angle == 90){
+    xTravel--;  
+  }
+  else if (angle == 180){
+    yTravel++;  
+  }
+  else{//angle == 270
+     xTravel++; 
+  }
 }
