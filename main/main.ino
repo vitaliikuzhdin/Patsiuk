@@ -45,6 +45,8 @@ GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
 String strCommands;
 byte commandSerialNum;
+bool BTstop;
+bool finished_ride;
 
 int angle;
 int xTravel;
@@ -96,7 +98,6 @@ void setup(){
 
 void loop() {
     read_commands();
-    bool finished_ride = false;
     while (finished_ride == false){
         if (getRightUS() > 20 and getLeftUS() > 20){
             if (currentCommandChar() == 'f'){
@@ -166,7 +167,7 @@ char currentCommandChar(){
 
 byte getLeftUS(){
     unsigned int leftSonarSumm = 0;
-    for(byte i = 0; i < 20; i++){
+    for (byte i = 0; i < 20; i++){
         leftSonarSumm += LEFT_SONAR.ping_cm(); 
     }
     return leftSonarSumm / 20;
@@ -174,14 +175,13 @@ byte getLeftUS(){
 
 byte getRightUS(){
     unsigned int rightSonarSumm = 0;
-    for(byte i = 0; i < 20; i++){
+    for (byte i = 0; i < 20; i++){
         rightSonarSumm += RIGHT_SONAR.ping_cm(); 
     }
     return rightSonarSumm / 20;
 }
 
 void read_commands(){
-    bool BTstop = false;
     while (BTstop == false){
         while (BTserial.available() > 0){
             char current_command = BTserial.read();
