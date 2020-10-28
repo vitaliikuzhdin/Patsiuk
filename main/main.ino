@@ -165,7 +165,7 @@ char currentCommandChar(){
 }
 
 byte getLeftUS(){
-    int leftSonarSumm = 0;
+    unsigned int leftSonarSumm = 0;
     for(byte i = 0; i < 20; i++){
         leftSonarSumm += LEFT_SONAR.ping_cm(); 
     }
@@ -173,7 +173,7 @@ byte getLeftUS(){
 }
 
 byte getRightUS(){
-    int rightSonarSumm = 0;
+    unsigned int rightSonarSumm = 0;
     for(byte i = 0; i < 20; i++){
         rightSonarSumm += RIGHT_SONAR.ping_cm(); 
     }
