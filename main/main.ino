@@ -96,49 +96,49 @@ void setup(){
   BTserial.begin(9600); 
 }
 
-void loop(){
+void loop() {
   read_commands();
   bool finished_ride = false;
-  while(finished_ride == false){
-    if (getRightUS() > 20 and getLeftUS() > 20){//checks if there is any obstacles
-      //guides car
+  while (finished_ride == false){
+    if (getRightUS() > 20 and getLeftUS() > 20){
       if (currentCommandChar() == 'f'){
         forward();
-        for (int i = 0; i < timeForRiding; i++){
-          BTserial.print(analogRead(metal_input));//send feedback of md
-          delay(1);
-        }
       }
       else if (currentCommandChar() == 'b'){
-        back();
-        for (int i = 0; i < timeForRiding; i++){
-          BTserial.print(analogRead(metal_input));//send feedback of md
-          delay(1);
-        }
+          back();
       }
       else if (currentCommandChar() == 'r'){
         right();
-        for (int i = 0; i < timeForTurning; i++){
-          BTserial.print(analogRead(metal_input));//send feedback of md
-          delay(1);
-        }
       }
       else if (currentCommandChar() == 'l'){
         left();
-        for (int i = 0; i < timeForTurning; i++){
-          BTserial.print(analogRead(metal_input));//send feedback of md
-          delay(1);
-        }
       }
-      else{
-        //return home
-        if (travelY 
+      else{//currentCommandChar() == 's'
+      finished_ride = true;  
       }
     }
-    else{//avoid obstacles
+    else{
+      //avoid obstacles
       right();
       forward();
-      left();
+      left(); 
+    }
+  }
+  //return home
+  if (yTravel > 0){
+    while (angle != 180){
+      right();  
+    }
+    for (byte i = 0; i < yTravel; i++){
+      forward();  
+    }
+  }
+  else{
+    while (angle != 0){
+      right();  
+    }
+    for (byte i = 0; i < yTravel; i++){
+      forward();  
     }
   }
 }
@@ -196,6 +196,7 @@ void right(){
   if (angle == 360){
     angle = 0;  
   }
+  delay(timeForTurning);
 }
 
 void left(){
@@ -210,6 +211,7 @@ void left(){
   if (angle == 360){
     angle = 0;  
   }
+  delay(timeForTurning);
 }
 
 void forward(){
@@ -232,6 +234,11 @@ void forward(){
   else{//angle == 270
      xTravel--; 
   }
+  for (int i = 0; i < timeForRiding; i++){
+    BTserial.print(analogRead(metal_input));
+    BTserial.flush();
+    delay(1);
+  }
 }
 
 void back(){
@@ -253,5 +260,10 @@ void back(){
   }
   else{//angle == 270
      xTravel++; 
+  }
+  for (int i = 0; i < timeForRiding; i++){
+    BTserial.print(analogRead(metal_input));
+    BTserial.flush();
+    delay(1);
   }
 }
