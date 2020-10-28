@@ -6,7 +6,6 @@
 #define timeForRiding 100//must be 10 cm
 #define timeForTurning 100//must be 90 degrees
 #define minDuty 200
-
 #define MAX_DISTANCE 100
 
 #define RIGHT_FRONT_PWM 5
