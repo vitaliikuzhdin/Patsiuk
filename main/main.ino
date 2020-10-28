@@ -96,7 +96,7 @@ void setup(){
   BTserial.begin(9600); 
 }
 
-void loop() {
+void loop(){
   read_commands();
   bool finished_ride = false;
   while (finished_ride == false){
