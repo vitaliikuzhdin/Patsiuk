@@ -52,6 +52,8 @@ int xTravel;
 int yTravel;
 
 void setup(){
+    BTserial.begin(9600);
+       
     pinMode(metal_input, INPUT);
     
     pinMode(RIGHT_FRONT_D, OUTPUT);
@@ -90,10 +92,7 @@ void setup(){
     RIGHT_FRONT.setMode(AUTO);
     RIGHT_BACK.setMode(AUTO);
     LEFT_FRONT.setMode(AUTO);
-    LEFT_BACK.setMode(AUTO);
-    
-    Serial.begin(9600);//only for tests
-    BTserial.begin(9600); 
+    LEFT_BACK.setMode(AUTO); 
 }
 
 void loop() {
@@ -124,7 +123,8 @@ void loop() {
             left(); 
         }
     }
-    //return home
+    //if finished_ride == true
+    //return home Y
     if (yTravel > 0){
         while (angle != 180){
             right();    
@@ -137,10 +137,28 @@ void loop() {
         while (angle != 0){
             right();    
         }
-        for (byte i = 0; i < yTravel; i++){
+        for (byte i = 0; i > yTravel; i--){
             forward();    
         }
     }
+    //return home X
+    if (xTravel > 0){
+        while (angle != 270){
+            right();  
+        }
+        for (byte i = 0; i < xTravel; i++){
+            forward();  
+        } 
+    }
+    else{//xTravel < 0
+          while (angle != 90){
+              right();  
+          }
+          for (byte i = 0; i > xTravel; i--){
+              forward();  
+          }
+    }
+    Serial.println('d');
 }
 
 char currentCommandChar(){
@@ -190,7 +208,7 @@ void right(){
     LEFT_FRONT.smoothTick(255);
     LEFT_BACK.smoothTick(255);
 
-    BTserial.print('r');
+    BTserial.println('r');
 
     angle += 90;
     if (angle == 360){
@@ -205,7 +223,7 @@ void left(){
     LEFT_FRONT.smoothTick(-255);
     LEFT_BACK.smoothTick(-255);
 
-    BTserial.print('l');
+    BTserial.println('l');
 
     angle -= 90;
     if (angle == 360){
@@ -235,9 +253,8 @@ void forward(){
          xTravel--; 
     }
     for (int i = 0; i < timeForRiding; i++){
-        BTserial.print(analogRead(metal_input));
-        BTserial.flush();
-        delay(1);
+        BTserial.println(analogRead(metal_input));
+        delay(50);
     }
 }
 
@@ -262,8 +279,7 @@ void back(){
          xTravel++; 
     }
     for (int i = 0; i < timeForRiding; i++){
-        BTserial.print(analogRead(metal_input));
-        BTserial.flush();
-        delay(1);
+        BTserial.println(analogRead(metal_input));
+        delay(50);
     }
 }
