@@ -7,30 +7,30 @@
 #define timeForTurning 100//must be 90 degrees
 #define minDuty 200
 
+#define MAX_DISTANCE 100
+
 #define RIGHT_FRONT_PWM 5
-#define RIGHT_FRONT_D 4
+#define RIGHT_FRONT_D 2
 
 #define RIGHT_BACK_PWM 9
 #define RIGHT_BACK_D A4
 
 #define LEFT_FRONT_PWM 6
-#define LEFT_FRONT_D 7
+#define LEFT_FRONT_D 3
 
 #define LEFT_BACK_PWM 10
 #define LEFT_BACK_D A3
 
-#define RIGHT_TRIG 3
+#define RIGHT_TRIG 7
 #define RIGHT_ECHO 8
-#define RIGHT_SONAR_VCC 2
+#define RIGHT_SONAR_VCC 4
 
-#define LEFT_TRIG 13
-#define LEFT_ECHO A0
-#define LEFT_SONAR_VCC 12
+#define LEFT_TRIG 12
+#define LEFT_ECHO 13
+#define LEFT_SONAR_VCC 11
 
 #define rx A1
 #define tx A2
-
-#define MAX_DISTANCE 100
 
 #define metal_input A5
 
@@ -132,6 +132,7 @@ void loop(){
       }
       else{
         //return home
+        if (travelY 
       }
     }
     else{//avoid obstacles
@@ -176,7 +177,7 @@ void read_commands(){
         }
       }
       else{
-        strCommands += BTserial.read();
+        strCommands += current_command;
         BTstop = true;
       }
     }
