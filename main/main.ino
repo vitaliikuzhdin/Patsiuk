@@ -158,7 +158,7 @@ void loop() {
               forward();  
           }
     }
-    Serial.println('d');
+    BTserial.println('d');
 }
 
 char currentCommandChar(){
@@ -179,6 +179,18 @@ byte getRightUS(){
         rightSonarSumm += RIGHT_SONAR.ping_cm(); 
     }
     return rightSonarSumm / 20;
+}
+
+char getMDFeedback(){
+    if (analogRead(metal_input) >= 800){
+        return 'h';  
+    }
+    else if (analogRead(metal_input) < 800 and analogRead(metal_input) > 300){
+        return 'm';  
+    }
+    else{
+        return 'l';  
+    }
 }
 
 void read_commands(){
@@ -207,12 +219,13 @@ void right(){
     LEFT_FRONT.smoothTick(255);
     LEFT_BACK.smoothTick(255);
 
-    BTserial.println('r');
-
     angle += 90;
     if (angle == 360){
         angle = 0;    
     }
+    
+    BTserial.println(angle);
+    
     delay(timeForTurning);
 }
 
@@ -222,12 +235,13 @@ void left(){
     LEFT_FRONT.smoothTick(-255);
     LEFT_BACK.smoothTick(-255);
 
-    BTserial.println('l');
-
     angle -= 90;
     if (angle == 360){
         angle = 0;    
     }
+
+    BTserial.println(angle);
+    
     delay(timeForTurning);
 }
 
@@ -252,7 +266,7 @@ void forward(){
          xTravel--; 
     }
     for (int i = 0; i < timeForRiding; i++){
-        BTserial.println(analogRead(metal_input));
+        BTserial.println(getMDFeedback());
         delay(50);
     }
 }
@@ -278,7 +292,7 @@ void back(){
          xTravel++; 
     }
     for (int i = 0; i < timeForRiding; i++){
-        BTserial.println(analogRead(metal_input));
+        BTserial.println(getMDFeedback());
         delay(50);
     }
 }
