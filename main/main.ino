@@ -105,7 +105,7 @@ void loop(){
         forward();
       }
       else if (currentCommandChar() == 'b'){
-          back();
+        back();
       }
       else if (currentCommandChar() == 'r'){
         right();
@@ -118,7 +118,7 @@ void loop(){
       }
     }
     else{
-      //avoid obstacles
+      //if getRightUS and getLeftUS < 20
       right();
       forward();
       left(); 
@@ -149,7 +149,7 @@ char currentCommandChar(){
 
 byte getLeftUS(){
   int leftSonarSumm = 0;
-  for(byte i = 0; i < 20; i++){
+  for (byte i = 0; i < 20; i++){
     leftSonarSumm += LEFT_SONAR.ping_cm(); 
   }
   return leftSonarSumm / 20;
@@ -157,7 +157,7 @@ byte getLeftUS(){
 
 byte getRightUS(){
   int rightSonarSumm = 0;
-  for(byte i = 0; i < 20; i++){
+  for (byte i = 0; i < 20; i++){
     rightSonarSumm += RIGHT_SONAR.ping_cm(); 
   }
   return rightSonarSumm / 20;
