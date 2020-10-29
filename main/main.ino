@@ -42,7 +42,7 @@ byte commandSerialNum;
 bool BTstop;
 bool finished_ride;
 
-int angle;
+int angle = 0;
 int xTravel;
 int yTravel;
 
@@ -87,7 +87,12 @@ void setup(){
     RIGHT_FRONT.setMode(AUTO);
     RIGHT_BACK.setMode(AUTO);
     LEFT_FRONT.setMode(AUTO);
-    LEFT_BACK.setMode(AUTO); 
+    LEFT_BACK.setMode(AUTO);
+
+    RIGHT_FRONT.setSmoothSpeed(50);
+    RIGHT_BACK.setSmoothSpeed(50);
+    LEFT_FRONT.setSmoothSpeed(50);
+    LEFT_BACK.setSmoothSpeed(50);
 }
 
 void loop() {
