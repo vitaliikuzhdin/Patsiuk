@@ -95,7 +95,7 @@ void setup(){
 void loop() {
     read_commands();
     while (finished_ride == false){
-        if (getRightUS() > 20 && getLeftUS() > 20){
+        if (getRightUS() > 20 and getLeftUS() > 20){
             if (currentCommandChar() == 'f'){
                 forward();
             }
