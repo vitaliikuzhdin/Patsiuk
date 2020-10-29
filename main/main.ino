@@ -42,7 +42,7 @@ byte commandSerialNum;
 bool BTstop;
 bool finished_ride;
 
-int angle = 0;
+int angle;
 int xTravel;
 int yTravel;
 
