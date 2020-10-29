@@ -158,7 +158,7 @@ void loop() {
               forward();  
           }
     }
-    BTserial.println('d');
+    BTserial.write('d');
 }
 
 char currentCommandChar(){
@@ -224,7 +224,7 @@ void right(){
         angle = 0;    
     }
     
-    BTserial.println(angle);
+    BTserial.write(angle);
     
     delay(timeForTurning);
 }
@@ -240,7 +240,7 @@ void left(){
         angle = 0;    
     }
 
-    BTserial.println(angle);
+    BTserial.write(angle);
     
     delay(timeForTurning);
 }
@@ -266,7 +266,7 @@ void forward(){
          xTravel--; 
     }
     for (int i = 0; i < timeForRiding; i++){
-        BTserial.println(getMDFeedback());
+        BTserial.write(getMDFeedback());
         delay(50);
     }
 }
@@ -277,7 +277,7 @@ void back(){
     LEFT_FRONT.smoothTick(-255);
     LEFT_BACK.smoothTick(-255);
 
-    BTserial.print('b');
+    BTserial.write('b');
 
     if (angle == 0){
         yTravel--;    
@@ -292,7 +292,7 @@ void back(){
          xTravel++; 
     }
     for (int i = 0; i < timeForRiding; i++){
-        BTserial.println(getMDFeedback());
+        BTserial.write(getMDFeedback());
         delay(50);
     }
 }
