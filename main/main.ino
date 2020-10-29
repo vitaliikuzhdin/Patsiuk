@@ -267,8 +267,8 @@ void forward(){
          xTravel--; 
     }
     for (int i = 0; i < timeForRiding; i++){
-        Serial.println(getMDFeedback());
         Serial.flush();
+        Serial.println(getMDFeedback());
         delay(50);
     }
 }
@@ -295,8 +295,8 @@ void back(){
          xTravel++; 
     }
     for (int i = 0; i < timeForRiding; i++){
-        Serial.println(getMDFeedback());
         Serial.flush();
+        Serial.println(getMDFeedback());
         delay(50);
     }
 }
