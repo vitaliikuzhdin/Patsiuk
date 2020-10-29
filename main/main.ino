@@ -1,5 +1,4 @@
 #include <NewPing.h>//documentation: https://bitbucket.org/teckel12/arduino-new-ping/wiki/Home
-#include <NeoSWSerial.h>//documentation: https://github.com/SlashDevin/NeoSWSerial
 #include <GyverMotor.h>//documentation: https://alexgyver.ru/gyvermotor/
 
 //test and fix
@@ -28,15 +27,10 @@
 #define LEFT_ECHO 13
 #define LEFT_SONAR_VCC 11
 
-#define rx A1
-#define tx A2
-
 #define metal_input A5
 
 NewPing RIGHT_SONAR(RIGHT_TRIG, RIGHT_ECHO, MAX_DISTANCE);
 NewPing LEFT_SONAR(LEFT_TRIG, LEFT_ECHO, MAX_DISTANCE);
-
-NeoSWSerial BTserial(rx, tx);
 
 GMotor RIGHT_FRONT(DRIVER2WIRE, RIGHT_FRONT_D, RIGHT_FRONT_PWM, HIGH);
 GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, HIGH);
@@ -53,7 +47,7 @@ int xTravel;
 int yTravel;
 
 void setup(){
-    BTserial.begin(9600);
+    Serial.begin(9600);
        
     pinMode(metal_input, INPUT);
     
@@ -99,7 +93,7 @@ void setup(){
 void loop() {
     read_commands();
     while (finished_ride == false){
-        if (getRightUS() > 20 and getLeftUS() > 20){
+        if (getRightUS() > 20 && getLeftUS() > 20){
             if (currentCommandChar() == 'f'){
                 forward();
             }
@@ -158,7 +152,11 @@ void loop() {
               forward();  
           }
     }
-    BTserial.write('d');
+    //set angle to 0
+    while (angle != 0){
+        right();  
+    }
+    Serial.println('d');
 }
 
 char currentCommandChar(){
@@ -183,20 +181,20 @@ byte getRightUS(){
 
 char getMDFeedback(){
     if (analogRead(metal_input) >= 800){
-        return 'h';  
+        return 'H';  
     }
-    else if (analogRead(metal_input) < 800 and analogRead(metal_input) > 300){
-        return 'm';  
+    else if (analogRead(metal_input) < 800 && analogRead(metal_input) > 300){
+        return 'M';  
     }
     else{
-        return 'l';  
+        return 'L';  
     }
 }
 
 void read_commands(){
     while (BTstop == false){
-        while (BTserial.available() > 0){
-            char current_command = BTserial.read();
+        while (Serial.available() > 0){
+            char current_command = Serial.read();
             if (current_command == 'c'){
                 strCommands = "";
             }
@@ -224,7 +222,8 @@ void right(){
         angle = 0;    
     }
     
-    BTserial.write(angle);
+    Serial.flush();
+    Serial.println(angle);
     
     delay(timeForTurning);
 }
@@ -240,7 +239,8 @@ void left(){
         angle = 0;    
     }
 
-    BTserial.write(angle);
+    Serial.flush();
+    Serial.println(angle);
     
     delay(timeForTurning);
 }
@@ -251,7 +251,8 @@ void forward(){
     LEFT_FRONT.smoothTick(255);
     LEFT_BACK.smoothTick(255);
     
-    BTserial.print('f');
+    Serial.flush();
+    Serial.print('f');
 
     if (angle == 0){
      yTravel++;    
@@ -266,7 +267,8 @@ void forward(){
          xTravel--; 
     }
     for (int i = 0; i < timeForRiding; i++){
-        BTserial.write(getMDFeedback());
+        Serial.println(getMDFeedback());
+        Serial.flush();
         delay(50);
     }
 }
@@ -277,7 +279,8 @@ void back(){
     LEFT_FRONT.smoothTick(-255);
     LEFT_BACK.smoothTick(-255);
 
-    BTserial.write('b');
+    Serial.flush();
+    Serial.println('b');
 
     if (angle == 0){
         yTravel--;    
@@ -292,7 +295,8 @@ void back(){
          xTravel++; 
     }
     for (int i = 0; i < timeForRiding; i++){
-        BTserial.write(getMDFeedback());
+        Serial.println(getMDFeedback());
+        Serial.flush();
         delay(50);
     }
 }
