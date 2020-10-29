@@ -93,7 +93,7 @@ void setup(){
 void loop() {
     read_commands();
     while (finished_ride == false){
-        if (getRightUS() > 20 && getLeftUS() > 20){
+        if (getRightUS() > 20 and getLeftUS() > 20){
             if (currentCommandChar() == 'f'){
                 forward();
             }
@@ -183,7 +183,7 @@ char getMDFeedback(){
     if (analogRead(metal_input) >= 800){
         return 'H';  
     }
-    else if (analogRead(metal_input) < 800 && analogRead(metal_input) > 300){
+    else if (analogRead(metal_input) < 800 and analogRead(metal_input) > 300){
         return 'M';  
     }
     else{
