@@ -42,7 +42,7 @@ byte commandSerialNum;
 bool BTstop;
 bool finished_ride;
 
-int angle;
+int angle = 0;
 int xTravel;
 int yTravel;
 
@@ -93,7 +93,7 @@ void setup(){
 void loop() {
     read_commands();
     while (finished_ride == false){
-        if (getRightUS() > 20 and getLeftUS() > 20){
+        if (getRightUS() > 20 && getLeftUS() > 20){
             if (currentCommandChar() == 'f'){
                 forward();
             }
@@ -183,10 +183,10 @@ char getMDFeedback(){
     if (analogRead(metal_input) >= 800){
         return 'H';  
     }
-    else if (analogRead(metal_input) < 800 and analogRead(metal_input) > 300){
+    else if (analogRead(metal_input) < 800 && analogRead(metal_input) > 300){
         return 'M';  
     }
-    else{
+    else{//low or no signal
         return 'L';  
     }
 }
@@ -211,6 +211,21 @@ void read_commands(){
     }
 }
 
+char angleChar(){
+    if (angle == 0){
+        return 'F';  
+    }
+    else if (angle == 90){
+        return 'R';  
+    }
+    else if (angle == 180){
+        return 'B';  
+    }
+    else{// angle == 270
+        return 'L';
+    }
+}
+
 void right(){
     RIGHT_FRONT.smoothTick(-255);
     RIGHT_BACK.smoothTick(-255);
@@ -223,7 +238,7 @@ void right(){
     }
     
     Serial.flush();
-    Serial.println(angle);
+    Serial.println(angleChar());
     
     delay(timeForTurning);
 }
@@ -240,7 +255,7 @@ void left(){
     }
 
     Serial.flush();
-    Serial.println(angle);
+    Serial.println(angleChar());
     
     delay(timeForTurning);
 }
@@ -252,7 +267,7 @@ void forward(){
     LEFT_BACK.smoothTick(255);
     
     Serial.flush();
-    Serial.print('f');
+    Serial.println('f');
 
     if (angle == 0){
      yTravel++;    
@@ -266,7 +281,7 @@ void forward(){
     else{//angle == 270
          xTravel--; 
     }
-    for (int i = 0; i < timeForRiding; i++){
+    for (unsigned int i = 0; i < timeForRiding; i++){
         Serial.flush();
         Serial.println(getMDFeedback());
         delay(50);
@@ -294,7 +309,7 @@ void back(){
     else{//angle == 270
          xTravel++; 
     }
-    for (int i = 0; i < timeForRiding; i++){
+    for (unsigned int i = 0; i < timeForRiding; i++){
         Serial.flush();
         Serial.println(getMDFeedback());
         delay(50);
