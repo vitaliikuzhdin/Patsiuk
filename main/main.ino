@@ -39,12 +39,9 @@ GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
 String strCommands;
 byte commandSerialNum;
-bool BTstop;
-bool finished_ride;
+bool BTstop, finished_ride;
 
-int angle = 0;
-int xTravel;
-int yTravel;
+int angle, xTravel, yTravel;
 
 void setup(){
     Serial.begin(9600);
