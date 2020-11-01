@@ -37,11 +37,9 @@ GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, HIGH);
 GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
 GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
-String strCommands;
-byte commandSerialNum;
-bool BTstop, finished_ride;
-
-int angle, xTravel, yTravel;
+int angle, xTravel, yTravel, joystickX, joystickY; 
+unsigned long recieved_data;
+bool joystickMode;
 
 void setup(){
     Serial.begin(9600);
@@ -93,32 +91,55 @@ void setup(){
 }
 
 void loop() {
-    read_commands();
-    while (finished_ride == false){
-        if (getRightUS() > 20 and getLeftUS() > 20){
-            if (currentCommandChar() == 'f'){
-                forward();
-            }
-            else if (currentCommandChar() == 'b'){
-                back();
-            }
-            else if (currentCommandChar() == 'r'){
-                right();
-            }
-            else if (currentCommandChar() == 'l'){
-                left();
-            }
-            else{//currentCommandChar() == 's'
-            finished_ride = true;    
-            }
-        }
-        else{
-            //avoid obstacles
-            right();
-            forward();
-            left(); 
-        }
+    while (Serial.available() > 0){
+        recieved_data = Serial.read();
     }
+    if (recieved_data == 1){
+        joystickMode = true;
+    }
+    else if (recieved_data == 2){
+         joystickMode = false; 
+    }
+    else{
+        if (joystickMode == true){
+            //recieve and do joystick stuff
+            for (unsigned int i = 1000; i >= 1; i /= 10){
+                if (i != 1){
+                    joystickY += recieved_data / i % 10 * i;
+                }
+                else{
+                    joystickY += recieved_data % 10;  
+                }
+            }
+            joystickX = recieved_data - joystickX;
+            
+            if (joystickX / 10000 % 10 == 9){
+                joystickX -= 9000;
+                joystickX *= -1; 
+            }
+            else{
+                joystickX -= 8000;  
+            }
+            if (joystickY / 10000 % 10 == 9){
+                joystickY -= 9000;
+                joystickY *= -1;  
+            }
+            else{
+                joystickY -= 8000;
+            }
+            
+        }
+        else if (joystickMode == false){
+            //recieve and do way stuff  
+        }  
+    }
+        
+
+
+
+
+
+    
     //if finished_ride == true
     //return home Y
     if (yTravel > 0){
@@ -158,11 +179,7 @@ void loop() {
     while (angle != 0){
         right();  
     }
-    Serial.println('d');
-}
-
-char currentCommandChar(){
-    return strCommands.charAt(commandSerialNum++);
+    Serial.println('n');
 }
 
 byte getLeftUS(){
@@ -181,53 +198,6 @@ byte getRightUS(){
     return rightSonarSumm / 20;
 }
 
-char getMDFeedback(){
-    if (analogRead(metal_input) >= 800){
-        return 'H';  
-    }
-    else if (analogRead(metal_input) < 800 && analogRead(metal_input) > 300){
-        return 'M';  
-    }
-    else{//low or no signal
-        return 'L';  
-    }
-}
-
-void read_commands(){
-    while (BTstop == false){
-        while (Serial.available() > 0){
-            char current_command = Serial.read();
-            if (current_command == 'c'){
-                strCommands = "";
-            }
-            else if (current_command != 's'){
-                for(byte i = 0; i < 10; i++){//because 1 command = 10 cm
-                    strCommands += current_command;
-                }
-            }
-            else{
-                strCommands += current_command;
-                BTstop = true;
-            }
-        }
-    }
-}
-
-char angleChar(){
-    if (angle == 0){
-        return 'F';  
-    }
-    else if (angle == 90){
-        return 'R';  
-    }
-    else if (angle == 180){
-        return 'B';  
-    }
-    else{// angle == 270
-        return 'L';
-    }
-}
-
 void right(){
     RIGHT_FRONT.smoothTick(-255);
     RIGHT_BACK.smoothTick(-255);
@@ -238,9 +208,6 @@ void right(){
     if (angle == 360){
         angle = 0;    
     }
-    
-    Serial.flush();
-    Serial.println(angleChar());
     
     delay(timeForTurning);
 }
@@ -255,9 +222,6 @@ void left(){
     if (angle == 360){
         angle = 0;    
     }
-
-    Serial.flush();
-    Serial.println(angleChar());
     
     delay(timeForTurning);
 }
@@ -267,9 +231,6 @@ void forward(){
     RIGHT_BACK.smoothTick(255);
     LEFT_FRONT.smoothTick(255);
     LEFT_BACK.smoothTick(255);
-    
-    Serial.flush();
-    Serial.println('f');
 
     if (angle == 0){
      yTravel++;    
@@ -284,9 +245,13 @@ void forward(){
          xTravel--; 
     }
     for (unsigned int i = 0; i < timeForRiding; i++){
-        Serial.flush();
-        Serial.println(getMDFeedback());
-        delay(50);
+        if (analogRead(metal_input) > 500){
+            Serial.println('Y');
+            stopCar();
+        }
+        else{
+            delay(10);
+        }
     }
 }
 
@@ -295,9 +260,6 @@ void back(){
     RIGHT_BACK.smoothTick(-255);
     LEFT_FRONT.smoothTick(-255);
     LEFT_BACK.smoothTick(-255);
-
-    Serial.flush();
-    Serial.println('b');
 
     if (angle == 0){
         yTravel--;    
@@ -312,8 +274,19 @@ void back(){
          xTravel++; 
     }
     for (unsigned int i = 0; i < timeForRiding; i++){
-        Serial.flush();
-        Serial.println(getMDFeedback());
-        delay(50);
+        if (analogRead(metal_input) > 500){
+            Serial.println('Y');
+            stopCar();
+        }
+        else{
+            delay(10);
+        }
     }
+}
+
+void stopCar(){
+    RIGHT_FRONT.smoothTick(0);
+    RIGHT_BACK.smoothTick(0);
+    LEFT_FRONT.smoothTick(0);
+    LEFT_BACK.smoothTick(0);
 }
