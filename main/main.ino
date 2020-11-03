@@ -111,7 +111,7 @@ void loop() {
                     joystickY += recieved_data % 10;  
                 }
             }
-            joystickX = recieved_data - joystickX;
+            joystickX = recieved_data - joystickY;
             
             if (joystickX / 10000 % 10 == 9){
                 joystickX -= 9000;
@@ -127,7 +127,13 @@ void loop() {
             else{
                 joystickY -= 8000;
             }
+            joystickX *= 2;//because joystick max is 127
+            joystickY *= 2;
             
+            RIGHT_FRONT.smoothTick(joystickY - joystickX);
+            RIGHT_BACK.smoothTick(joystickY - joystickX);
+            LEFT_FRONT.smoothTick(joystickY + joystickX);
+            LEFT_BACK.smoothTick(joystickY + joystickX);
         }
         else if (joystickMode == false){
             //recieve and do way stuff  
