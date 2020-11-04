@@ -38,7 +38,7 @@ GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
 int angle, xTravel, yTravel, joystickX, joystickY; 
 unsigned long recieved_data;
-bool joystickMode;
+boolean joystickMode, doneParsing;
 
 void setup(){
     Serial.begin(9600);
@@ -92,7 +92,7 @@ void setup(){
 
 void loop() {
     while (Serial.available() > 0){
-        recieved_data = Serial.read();
+        recieved_data = Serial.peek();
     }
     if (recieved_data == 1){
         joystickMode = true;
@@ -102,38 +102,16 @@ void loop() {
     }
     else{
         if (joystickMode == true){
-            //recieve and do joystick stuff
-            for (unsigned int i = 1000; i >= 1; i /= 10){
-                if (i != 1){
-                    joystickY += recieved_data / i % 10 * i;
-                }
-                else{
-                    joystickY += recieved_data % 10;  
-                }
-            }
-            joystickX = recieved_data - joystickY;
+            parsing();
+            if (doneParsing){
+                joystickX *= 2;//because joystick max is 127
+                joystickY *= 2;
             
-            if (joystickX / 10000 % 10 == 9){
-                joystickX -= 9000;
-                joystickX *= -1; 
+                RIGHT_FRONT.smoothTick(joystickY - joystickX);
+                RIGHT_BACK.smoothTick(joystickY - joystickX);
+                LEFT_FRONT.smoothTick(joystickY + joystickX);
+                LEFT_BACK.smoothTick(joystickY + joystickX);
             }
-            else{
-                joystickX -= 8000;  
-            }
-            if (joystickY / 10000 % 10 == 9){
-                joystickY -= 9000;
-                joystickY *= -1;  
-            }
-            else{
-                joystickY -= 8000;
-            }
-            joystickX *= 2;//because joystick max is 127
-            joystickY *= 2;
-            
-            RIGHT_FRONT.smoothTick(joystickY - joystickX);
-            RIGHT_BACK.smoothTick(joystickY - joystickX);
-            LEFT_FRONT.smoothTick(joystickY + joystickX);
-            LEFT_BACK.smoothTick(joystickY + joystickX);
         }
         else if (joystickMode == false){
             //recieve and do way stuff  
@@ -295,4 +273,46 @@ void stopCar(){
     RIGHT_BACK.smoothTick(0);
     LEFT_FRONT.smoothTick(0);
     LEFT_BACK.smoothTick(0);
+}
+
+boolean startParsing, readMod;
+char current_axis;
+String string_convert = "";
+
+void parsing(){
+    if (Serial.available() > 0){
+        char incomingChar = Serial.read();  
+        if (readMod){
+            readMod = false;
+            if (incomingChar == '1'){
+                joystickMode = true;
+            }
+            else if (incomingChar == '2'){
+                joystickMode = false;
+            }      
+        }
+        if (startParsing){
+            if (incomingChar == ','){
+                joystickX = string_convert.toInt();
+                string_convert = "";
+                current_axis = 'Y';
+            }
+            else if (incomingChar == ';'){
+                startParsing = false;
+                doneParsing = true;
+                joystickY = string_convert.toInt();
+                string_convert = "";
+            }
+            else{
+                string_convert += incomingChar;  
+            }
+        }
+        if (incomingChar == '$'){
+            readMod = true;            
+        }
+        if (incomingChar == ' '){
+             current_axis = 'X';
+             startParsing = true;
+        }
+    }
 }
