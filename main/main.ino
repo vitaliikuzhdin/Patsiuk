@@ -37,9 +37,10 @@ GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, HIGH);
 GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
 GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
-int angle, xTravel, yTravel, joystickX, joystickY; 
+int carAngle, xTravel, yTravel, joystickX, joystickY; 
 unsigned long recieved_data;
-boolean joystickMode, doneParsing;
+boolean joystickMode, doneParsing, startParsing, readMod;
+String string_convert = "";
 
 void setup(){
     Serial.begin(9600);
@@ -128,7 +129,7 @@ void loop() {
     //if finished_ride == true
     //return home Y
     if (yTravel > 0){
-        while (angle != 180){
+        while (carAngle != 180){
             right();    
         }
         for (byte i = 0; i < yTravel; i++){
@@ -136,7 +137,7 @@ void loop() {
         }
     }
     else{
-        while (angle != 0){
+        while (carAngle != 0){
             right();    
         }
         for (byte i = 0; i > yTravel; i--){
@@ -145,7 +146,7 @@ void loop() {
     }
     //return home X
     if (xTravel > 0){
-        while (angle != 270){
+        while (carAngle != 270){
             right();  
         }
         for (byte i = 0; i < xTravel; i++){
@@ -153,15 +154,15 @@ void loop() {
         } 
     }
     else{//xTravel < 0
-          while (angle != 90){
+          while (carAngle != 90){
               right();  
           }
           for (byte i = 0; i > xTravel; i--){
               forward();  
           }
     }
-    //set angle to 0
-    while (angle != 0){
+    //set carAngle to 0
+    while (carAngle != 0){
         right();  
     }
     Serial.println('n');
@@ -189,9 +190,9 @@ void right(){
     LEFT_FRONT.smoothTick(255);
     LEFT_BACK.smoothTick(255);
 
-    angle += 90;
-    if (angle == 360){
-        angle = 0;    
+    carAngle += 90;
+    if (carAngle == 360){
+        carAngle = 0;    
     }
     
     delay(timeForTurning);
@@ -203,9 +204,9 @@ void left(){
     LEFT_FRONT.smoothTick(-255);
     LEFT_BACK.smoothTick(-255);
 
-    angle -= 90;
-    if (angle == 360){
-        angle = 0;    
+    carAngle -= 90;
+    if (carAngle == 360){
+        carAngle = 0;    
     }
     
     delay(timeForTurning);
@@ -217,16 +218,16 @@ void forward(){
     LEFT_FRONT.smoothTick(255);
     LEFT_BACK.smoothTick(255);
 
-    if (angle == 0){
+    if (carAngle == 0){
      yTravel++;    
     }
-    else if (angle == 90){
+    else if (carAngle == 90){
         xTravel++;    
     }
-    else if (angle == 180){
+    else if (carAngle == 180){
         yTravel--;    
     }
-    else{//angle == 270
+    else{//carAngle == 270
          xTravel--; 
     }
     for (unsigned int i = 0; i < timeForRiding; i++){
@@ -246,16 +247,16 @@ void back(){
     LEFT_FRONT.smoothTick(-255);
     LEFT_BACK.smoothTick(-255);
 
-    if (angle == 0){
+    if (carAngle == 0){
         yTravel--;    
     }
-    else if (angle == 90){
+    else if (carAngle == 90){
         xTravel--;    
     }
-    else if (angle == 180){
+    else if (carAngle == 180){
         yTravel++;    
     }
-    else{//angle == 270
+    else{//carAngle == 270
          xTravel++; 
     }
     for (unsigned int i = 0; i < timeForRiding; i++){
@@ -276,10 +277,6 @@ void stopCar(){
     LEFT_BACK.smoothTick(0);
 }
 
-boolean startParsing, readMod;
-char current_axis;
-String string_convert = "";
-
 void parsing(){
     if (Serial.available() > 0){
         char incomingChar = Serial.read();  
@@ -296,7 +293,6 @@ void parsing(){
             if (incomingChar == ','){
                 joystickX = string_convert.toInt();
                 string_convert = "";
-                current_axis = 'Y';
             }
             else if (incomingChar == ';'){
                 startParsing = false;
@@ -312,7 +308,6 @@ void parsing(){
             readMod = true;            
         }
         if (incomingChar == ' '){
-             current_axis = 'X';
              startParsing = true;
         }
     }
