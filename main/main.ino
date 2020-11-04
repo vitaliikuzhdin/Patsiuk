@@ -1,10 +1,7 @@
-#include <NewPing.h>//documentation: https://bitbucket.org/teckel12/arduino-new-ping/wiki/Home
-#include <GyverMotor.h>//documentation: https://alexgyver.ru/gyvermotor/
-
 //test and fix
 #define timeForRiding 100//must be 10 cm
 #define timeForTurning 100//must be 90 degrees
-#define minDuty 200
+#define minDuty 50
 #define MAX_DISTANCE 100
 
 #define RIGHT_FRONT_PWM 5
@@ -29,9 +26,11 @@
 
 #define metal_input A5
 
+#include <NewPing.h>//documentation: https://bitbucket.org/teckel12/arduino-new-ping/wiki/Home
 NewPing RIGHT_SONAR(RIGHT_TRIG, RIGHT_ECHO, MAX_DISTANCE);
 NewPing LEFT_SONAR(LEFT_TRIG, LEFT_ECHO, MAX_DISTANCE);
 
+#include <GyverMotor.h>//documentation: https://alexgyver.ru/gyvermotor/
 GMotor RIGHT_FRONT(DRIVER2WIRE, RIGHT_FRONT_D, RIGHT_FRONT_PWM, HIGH);
 GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, HIGH);
 GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
@@ -69,6 +68,7 @@ void setup(){
     LEFT_FRONT.setResolution(8);
     LEFT_BACK.setResolution(8);
 
+    //test and fix
     RIGHT_FRONT.setDirection(NORMAL);
     RIGHT_BACK.setDirection(NORMAL);
     LEFT_FRONT.setDirection(REVERSE);
