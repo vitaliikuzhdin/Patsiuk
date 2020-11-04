@@ -2,6 +2,7 @@
 #define timeForRiding 100//must be 10 cm
 #define timeForTurning 100//must be 90 degrees
 #define minDuty 50
+#define smoothSpeed 50
 #define MAX_DISTANCE 100
 
 #define RIGHT_FRONT_PWM 5
@@ -84,10 +85,10 @@ void setup(){
     LEFT_FRONT.setMode(AUTO);
     LEFT_BACK.setMode(AUTO);
 
-    RIGHT_FRONT.setSmoothSpeed(50);
-    RIGHT_BACK.setSmoothSpeed(50);
-    LEFT_FRONT.setSmoothSpeed(50);
-    LEFT_BACK.setSmoothSpeed(50);
+    RIGHT_FRONT.setSmoothSpeed(smoothSpeed);
+    RIGHT_BACK.setSmoothSpeed(smoothSpeed);
+    LEFT_FRONT.setSmoothSpeed(smoothSpeed);
+    LEFT_BACK.setSmoothSpeed(smoothSpeed);
 }
 
 void loop() {
