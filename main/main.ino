@@ -37,10 +37,12 @@ GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, HIGH);
 GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
 GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
-int carAngle, xTravel, yTravel, joystickX, joystickY; 
+int angle, xTravel, yTravel, joystickX, joystickY; 
 unsigned long recieved_data;
 boolean joystickMode, doneParsing, startParsing, readMod;
+char current_axis, serial_flush;
 String string_convert = "";
+
 
 void setup(){
     Serial.begin(9600);
@@ -98,9 +100,11 @@ void loop() {
     }
     if (recieved_data == 1){
         joystickMode = true;
+        serial_flush = Serial.read();//to empty buffer
     }
     else if (recieved_data == 2){
-         joystickMode = false; 
+         joystickMode = false;
+         serial_flush = Serial.read();//to empty buffer. yeah, really
     }
     else{
         if (joystickMode == true){
@@ -129,7 +133,7 @@ void loop() {
     //if finished_ride == true
     //return home Y
     if (yTravel > 0){
-        while (carAngle != 180){
+        while (angle != 180){
             right();    
         }
         for (byte i = 0; i < yTravel; i++){
@@ -137,7 +141,7 @@ void loop() {
         }
     }
     else{
-        while (carAngle != 0){
+        while (angle != 0){
             right();    
         }
         for (byte i = 0; i > yTravel; i--){
@@ -146,7 +150,7 @@ void loop() {
     }
     //return home X
     if (xTravel > 0){
-        while (carAngle != 270){
+        while (angle != 270){
             right();  
         }
         for (byte i = 0; i < xTravel; i++){
@@ -154,15 +158,15 @@ void loop() {
         } 
     }
     else{//xTravel < 0
-          while (carAngle != 90){
+          while (angle != 90){
               right();  
           }
           for (byte i = 0; i > xTravel; i--){
               forward();  
           }
     }
-    //set carAngle to 0
-    while (carAngle != 0){
+    //set angle to 0
+    while (angle != 0){
         right();  
     }
     Serial.println('n');
@@ -190,9 +194,9 @@ void right(){
     LEFT_FRONT.smoothTick(255);
     LEFT_BACK.smoothTick(255);
 
-    carAngle += 90;
-    if (carAngle == 360){
-        carAngle = 0;    
+    angle += 90;
+    if (angle == 360){
+        angle = 0;    
     }
     
     delay(timeForTurning);
@@ -204,9 +208,9 @@ void left(){
     LEFT_FRONT.smoothTick(-255);
     LEFT_BACK.smoothTick(-255);
 
-    carAngle -= 90;
-    if (carAngle == 360){
-        carAngle = 0;    
+    angle -= 90;
+    if (angle == 360){
+        angle = 0;    
     }
     
     delay(timeForTurning);
@@ -218,16 +222,16 @@ void forward(){
     LEFT_FRONT.smoothTick(255);
     LEFT_BACK.smoothTick(255);
 
-    if (carAngle == 0){
+    if (angle == 0){
      yTravel++;    
     }
-    else if (carAngle == 90){
+    else if (angle == 90){
         xTravel++;    
     }
-    else if (carAngle == 180){
+    else if (angle == 180){
         yTravel--;    
     }
-    else{//carAngle == 270
+    else{//angle == 270
          xTravel--; 
     }
     for (unsigned int i = 0; i < timeForRiding; i++){
@@ -247,16 +251,16 @@ void back(){
     LEFT_FRONT.smoothTick(-255);
     LEFT_BACK.smoothTick(-255);
 
-    if (carAngle == 0){
+    if (angle == 0){
         yTravel--;    
     }
-    else if (carAngle == 90){
+    else if (angle == 90){
         xTravel--;    
     }
-    else if (carAngle == 180){
+    else if (angle == 180){
         yTravel++;    
     }
-    else{//carAngle == 270
+    else{//angle == 270
          xTravel++; 
     }
     for (unsigned int i = 0; i < timeForRiding; i++){
@@ -293,6 +297,7 @@ void parsing(){
             if (incomingChar == ','){
                 joystickX = string_convert.toInt();
                 string_convert = "";
+                current_axis = 'Y';
             }
             else if (incomingChar == ';'){
                 startParsing = false;
@@ -308,6 +313,7 @@ void parsing(){
             readMod = true;            
         }
         if (incomingChar == ' '){
+             current_axis = 'X';
              startParsing = true;
         }
     }
