@@ -37,7 +37,7 @@ GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, HIGH);
 GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
 GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
-boolean joystickMode, doneParsing, startParsing, readMod, finished_ride;
+boolean joystickMode, doneParsing, startParsing, readMod, finished_ride, rightTurn;
 int angle, xTravel, yTravel, X, Y;
 String string_convert = "";
 
@@ -72,7 +72,7 @@ void setup(){
     //test and fix
     RIGHT_FRONT.setDirection(NORMAL);
     RIGHT_BACK.setDirection(NORMAL);
-    LEFT_FRONT.setDirection(REVERSE);
+    LEFT_FRONT.setDirection(NORMAL);
     LEFT_BACK.setDirection(NORMAL);
 
     RIGHT_FRONT.setMinDuty(minDuty);
@@ -116,6 +116,24 @@ void loop() {
             if (getRightUS() > 20 and getLeftUS() > 20){
                 while (finished_ride == false){
                     //do way stuff
+                    right();
+                    for (byte i = Y * 10; i >= 0; i--){
+                        for (byte i = X * 10; i >= 0; i--){
+                            forward();  
+                        }
+                        if (rightTurn){
+                            right();
+                            forward();
+                            right();
+                            rightTurn = false;
+                        }
+                        else{
+                            left();
+                            forward();
+                            left();
+                            rightTurn = true; 
+                        }
+                    } 
                 }   
                 if (finished_ride){    
                     return_home();
