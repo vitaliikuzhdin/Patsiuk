@@ -37,8 +37,8 @@ GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, HIGH);
 GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
 GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
-boolean joystickMode, doneParsing, startParsing, readMod;
-int angle, xTravel, yTravel, joystickX, joystickY;
+boolean joystickMode, doneParsing, startParsing, readMod, finished_ride;
+int angle, xTravel, yTravel, X, Y;
 String string_convert = "";
 
 void setup(){
@@ -95,66 +95,68 @@ void loop() {
     parsing();
     if (doneParsing){
         if (joystickMode){
-            joystickX *= 2;//because joystick max is 127
-            joystickY *= 2;
+            X *= 2;//because joystick max is 127
+            Y *= 2;
             
-            RIGHT_FRONT.smoothTick(joystickY - joystickX);
-            RIGHT_BACK.smoothTick(joystickY - joystickX);
-            LEFT_FRONT.smoothTick(joystickY + joystickX);
-            LEFT_BACK.smoothTick(joystickY + joystickX);
+            RIGHT_FRONT.smoothTick(Y - X);
+            RIGHT_BACK.smoothTick(Y - X);
+            LEFT_FRONT.smoothTick(Y + X);
+            LEFT_BACK.smoothTick(Y + X);
+
+            if (analogRead(metal_input) >= 400){
+                Serial.flush();
+                Serial.println('Y');  
+            }
+            else{
+                Serial.flush();
+                Serial.println('n');
+            }
         }
         else if (joystickMode == false){
-        //recieve and do way stuff  
+            while (finished_ride == false){
+                //do way stuff
+                //return home
+                if (yTravel > 0){
+                    while (angle != 180){
+                        right();    
+                    }
+                    for (byte i = 0; i < yTravel; i++){
+                        forward();    
+                    }
+                }
+                else{
+                    while (angle != 0){
+                        right();    
+                    }
+                    for (byte i = 0; i > yTravel; i--){
+                        forward();    
+                    }
+                }
+                //return home X
+                if (xTravel > 0){
+                    while (angle != 270){
+                        right();  
+                    }
+                    for (byte i = 0; i < xTravel; i++){
+                        forward();  
+                    } 
+                }
+                else{//xTravel < 0
+                    while (angle != 90){
+                        right();  
+                    }
+                    for (byte i = 0; i > xTravel; i--){
+                        forward();  
+                    }
+                }
+                //set angle to 0
+                while (angle != 0){
+                    right();  
+                }
+                Serial.println('e');
+            }
         }
     }    
-
-        
-
-
-
-
-
-    
-    //if finished_ride == true
-    //return home Y
-    if (yTravel > 0){
-        while (angle != 180){
-            right();    
-        }
-        for (byte i = 0; i < yTravel; i++){
-            forward();    
-        }
-    }
-    else{
-        while (angle != 0){
-            right();    
-        }
-        for (byte i = 0; i > yTravel; i--){
-            forward();    
-        }
-    }
-    //return home X
-    if (xTravel > 0){
-        while (angle != 270){
-            right();  
-        }
-        for (byte i = 0; i < xTravel; i++){
-            forward();  
-        } 
-    }
-    else{//xTravel < 0
-          while (angle != 90){
-              right();  
-          }
-          for (byte i = 0; i > xTravel; i--){
-              forward();  
-          }
-    }
-    //set angle to 0
-    while (angle != 0){
-        right();  
-    }
-    Serial.println('n');
 }
 
 byte getLeftUS(){
@@ -268,7 +270,7 @@ void stopCar(){
 
 void parsing(){
     if (Serial.available() > 0){
-        char incomingChar = Serial.read();  
+        unsigned char incomingChar = Serial.read();  
         if (readMod){
             readMod = false;
             if (incomingChar == '1'){
@@ -280,13 +282,13 @@ void parsing(){
         }
         if (startParsing){
             if (incomingChar == ','){
-                joystickX = string_convert.toInt();
+                X = string_convert.toInt();
                 string_convert = "";
             }
             else if (incomingChar == ';'){
                 startParsing = false;
                 doneParsing = true;
-                joystickY = string_convert.toInt();
+                Y = string_convert.toInt();
                 string_convert = "";
             }
             else{
