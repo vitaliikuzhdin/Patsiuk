@@ -37,12 +37,10 @@ GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, HIGH);
 GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
 GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
-int angle, xTravel, yTravel, joystickX, joystickY; 
-unsigned long recieved_data;
 boolean joystickMode, doneParsing, startParsing, readMod;
-char current_axis, serial_flush;
+char current_axis;
+int angle, xTravel, yTravel, joystickX, joystickY;
 String string_convert = "";
-
 
 void setup(){
     Serial.begin(9600);
@@ -95,34 +93,22 @@ void setup(){
 }
 
 void loop() {
-    while (Serial.available() > 0){
-        recieved_data = Serial.peek();
-    }
-    if (recieved_data == 1){
-        joystickMode = true;
-        serial_flush = Serial.read();//to empty buffer
-    }
-    else if (recieved_data == 2){
-         joystickMode = false;
-         serial_flush = Serial.read();//to empty buffer. yeah, really
-    }
-    else{
-        if (joystickMode == true){
-            parsing();
-            if (doneParsing){
-                joystickX *= 2;//because joystick max is 127
-                joystickY *= 2;
+    parsing();
+    if (doneParsing){
+        if (joystickMode){
+            joystickX *= 2;//because joystick max is 127
+            joystickY *= 2;
             
-                RIGHT_FRONT.smoothTick(joystickY - joystickX);
-                RIGHT_BACK.smoothTick(joystickY - joystickX);
-                LEFT_FRONT.smoothTick(joystickY + joystickX);
-                LEFT_BACK.smoothTick(joystickY + joystickX);
-            }
+            RIGHT_FRONT.smoothTick(joystickY - joystickX);
+            RIGHT_BACK.smoothTick(joystickY - joystickX);
+            LEFT_FRONT.smoothTick(joystickY + joystickX);
+            LEFT_BACK.smoothTick(joystickY + joystickX);
         }
         else if (joystickMode == false){
-            //recieve and do way stuff  
-        }  
-    }
+        //recieve and do way stuff  
+        }
+    }    
+
         
 
 
