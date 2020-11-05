@@ -117,8 +117,8 @@ void loop() {
                 while (finished_ride == false){
                     //do way stuff
                     right();
-                    for (byte i = Y * 10; i >= 0; i--){
-                        for (byte i = X * 10; i >= 0; i--){
+                    for (unsigned int i = Y * 10 + 1; i > 0; i--){
+                        for (unsigned int i = X * 10 + 1; i > 0; i--){
                             forward();  
                         }
                         if (rightTurn){
@@ -134,7 +134,7 @@ void loop() {
                             rightTurn = true; 
                         }
                     } 
-                }   
+                }  
                 if (finished_ride){    
                     return_home();
                     Serial.println('e');
