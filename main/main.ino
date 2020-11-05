@@ -113,47 +113,19 @@ void loop() {
             }
         }
         else if (joystickMode == false){
-            while (finished_ride == false){
-                //do way stuff
-                //return home
-                if (yTravel > 0){
-                    while (angle != 180){
-                        right();    
-                    }
-                    for (byte i = 0; i < yTravel; i++){
-                        forward();    
-                    }
+            if (getRightUS() > 20 and getLeftUS() > 20){
+                while (finished_ride == false){
+                    //do way stuff
+                }   
+                if (finished_ride){    
+                    return_home();
+                    Serial.println('e');
                 }
-                else{
-                    while (angle != 0){
-                        right();    
-                    }
-                    for (byte i = 0; i > yTravel; i--){
-                        forward();    
-                    }
-                }
-                //return home X
-                if (xTravel > 0){
-                    while (angle != 270){
-                        right();  
-                    }
-                    for (byte i = 0; i < xTravel; i++){
-                        forward();  
-                    } 
-                }
-                else{//xTravel < 0
-                    while (angle != 90){
-                        right();  
-                    }
-                    for (byte i = 0; i > xTravel; i--){
-                        forward();  
-                    }
-                }
-                //set angle to 0
-                while (angle != 0){
-                    right();  
-                }
-                Serial.println('e');
+            }
+            else{
+                right();
+                forward();
+                left();  
             }
         }
     }    
@@ -266,6 +238,46 @@ void stopCar(){
     RIGHT_BACK.smoothTick(0);
     LEFT_FRONT.smoothTick(0);
     LEFT_BACK.smoothTick(0);
+}
+
+void return_home(){
+    if (yTravel > 0){
+        while (angle != 180){
+            right();    
+        }
+        for (byte i = 0; i < yTravel; i++){
+            forward();    
+        }
+    }
+    else{//yTravel < 0
+        while (angle != 0){
+            right();    
+        }
+        for (byte i = 0; i > yTravel; i--){
+            forward();    
+        }
+    }
+    //return home X
+    if (xTravel > 0){
+        while (angle != 270){
+            right();  
+        }
+        for (byte i = 0; i < xTravel; i++){
+            forward();  
+        } 
+    }
+    else{//xTravel < 0
+        while (angle != 90){
+            right();  
+        }
+        for (byte i = 0; i > xTravel; i--){
+            forward();  
+        }
+    }
+    //set angle to 0
+    while (angle != 0){
+        right();  
+    }
 }
 
 void parsing(){
