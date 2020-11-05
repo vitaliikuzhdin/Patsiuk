@@ -38,7 +38,6 @@ GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
 GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
 boolean joystickMode, doneParsing, startParsing, readMod;
-char current_axis;
 int angle, xTravel, yTravel, joystickX, joystickY;
 String string_convert = "";
 
@@ -283,7 +282,6 @@ void parsing(){
             if (incomingChar == ','){
                 joystickX = string_convert.toInt();
                 string_convert = "";
-                current_axis = 'Y';
             }
             else if (incomingChar == ';'){
                 startParsing = false;
@@ -299,7 +297,6 @@ void parsing(){
             readMod = true;            
         }
         if (incomingChar == ' '){
-             current_axis = 'X';
              startParsing = true;
         }
     }
