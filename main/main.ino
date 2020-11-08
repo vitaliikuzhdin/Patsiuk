@@ -259,6 +259,7 @@ void stopCar(){
 }
 
 void return_home(){
+    //return home Y
     if (yTravel > 0){
         while (angle != 180){
             right();    
@@ -300,7 +301,7 @@ void return_home(){
 
 void parsing(){
     if (Serial.available() > 0){
-        unsigned char incomingChar = Serial.read();  
+        char incomingChar = Serial.read();  
         if (readMod){
             readMod = false;
             if (incomingChar == '1'){
