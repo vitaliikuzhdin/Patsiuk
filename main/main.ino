@@ -144,7 +144,7 @@ void loop() {
                         Serial.println('e');
                     }
                 }
-                else{
+                else{//there is obstacles
                     right();
                     forward();
                     left();  
@@ -226,6 +226,7 @@ void forward(){
             stopCarBool = true;
         }
         else{
+            Serial.println('n');
             delay(10);
         }
     }
@@ -256,6 +257,7 @@ void back(){
         }
         else{
             delay(10);
+            Serial.println('n');
         }
     }
 }
