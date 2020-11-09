@@ -1,9 +1,13 @@
-//test and fix
+//test and change
 #define timeForRiding 100//must be 10 cm
 #define timeForTurning 100//must be 90 degrees
 #define minDuty 50
 #define smoothSpeed 50
-#define MAX_DISTANCE 100
+#define RIGHT_FRONT_DIRECTION NORMAL//NORMAL or REVERSE
+#define RIGHT_BACK_DIRECTION NORMAL
+#define LEFT_FRONT_DIRECTION NORMAL
+#define LEFT_BACK_DIRECTION NORMAL
+#define MAX_SONAR_DISTANCE 100
 
 #define RIGHT_FRONT_PWM 5
 #define RIGHT_FRONT_D 2
@@ -28,8 +32,8 @@
 #define metal_input A5
 
 #include <NewPing.h>//documentation: https://bitbucket.org/teckel12/arduino-new-ping/wiki/Home
-NewPing RIGHT_SONAR(RIGHT_TRIG, RIGHT_ECHO, MAX_DISTANCE);
-NewPing LEFT_SONAR(LEFT_TRIG, LEFT_ECHO, MAX_DISTANCE);
+NewPing RIGHT_SONAR(RIGHT_TRIG, RIGHT_ECHO, MAX_SONAR_DISTANCE);
+NewPing LEFT_SONAR(LEFT_TRIG, LEFT_ECHO, MAX_SONAR_DISTANCE);
 
 #include <GyverMotor.h>//documentation: https://alexgyver.ru/gyvermotor/
 GMotor RIGHT_FRONT(DRIVER2WIRE, RIGHT_FRONT_D, RIGHT_FRONT_PWM, HIGH);
@@ -37,9 +41,9 @@ GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, HIGH);
 GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
 GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
-boolean joystickMode, doneParsing, startParsing, readMod, finished_ride, rightTurn;
+boolean joystickMode, doneParsing, startParsing, readMod, finished_ride, rightTurn, stopCarBool;
 int angle, xTravel, yTravel, X, Y;
-String string_convert = "";
+String string_convert;
 
 void setup(){
     Serial.begin(9600);
@@ -69,11 +73,10 @@ void setup(){
     LEFT_FRONT.setResolution(8);
     LEFT_BACK.setResolution(8);
 
-    //test and fix
-    RIGHT_FRONT.setDirection(NORMAL);
-    RIGHT_BACK.setDirection(NORMAL);
-    LEFT_FRONT.setDirection(NORMAL);
-    LEFT_BACK.setDirection(NORMAL);
+    RIGHT_FRONT.setDirection(RIGHT_FRONT_DIRECTION);
+    RIGHT_BACK.setDirection(RIGHT_BACK_DIRECTION);
+    LEFT_FRONT.setDirection(LEFT_FRONT_DIRECTION);
+    LEFT_BACK.setDirection(LEFT_BACK_DIRECTION);
 
     RIGHT_FRONT.setMinDuty(minDuty);
     RIGHT_BACK.setMinDuty(minDuty);
@@ -113,37 +116,43 @@ void loop() {
             }
         }
         else if (joystickMode == false){
-            if (getRightUS() > 20 and getLeftUS() > 20){
-                while (finished_ride == false){
-                    //do way stuff
+            if (stopCarBool == false){
+                if (getRightUS() > 20 and getLeftUS() > 20){
+                    if (finished_ride == false){
+                        //do way stuff
+                        right();
+                        for (unsigned int i = Y * 10 + 1; i > 0; i--){
+                            for (unsigned int i = X * 10 + 1; i > 0; i--){
+                                forward();  
+                            }
+                            if (rightTurn){
+                                right();
+                                forward();
+                                right();
+                                rightTurn = false;
+                            }
+                            else{
+                                left();
+                                forward();
+                                left();
+                                rightTurn = true; 
+                            }
+                        } 
+                    }  
+                    if (finished_ride){    
+                        return_home();
+                        Serial.println('e');
+                    }
+                }
+                else{
                     right();
-                    for (unsigned int i = Y * 10 + 1; i > 0; i--){
-                        for (unsigned int i = X * 10 + 1; i > 0; i--){
-                            forward();  
-                        }
-                        if (rightTurn){
-                            right();
-                            forward();
-                            right();
-                            rightTurn = false;
-                        }
-                        else{
-                            left();
-                            forward();
-                            left();
-                            rightTurn = true; 
-                        }
-                    } 
-                }  
-                if (finished_ride){    
-                    return_home();
-                    Serial.println('e');
+                    forward();
+                    left();  
                 }
             }
-            else{
-                right();
-                forward();
-                left();  
+            else{//stopCarBool == true
+                stopCar();
+                Serial.println('Y');
             }
         }
     }    
@@ -214,7 +223,7 @@ void forward(){
     for (unsigned int i = 0; i < timeForRiding; i++){
         if (analogRead(metal_input) > 500){
             Serial.println('Y');
-            stopCar();
+            stopCarBool = true;
         }
         else{
             delay(10);
@@ -243,7 +252,7 @@ void back(){
     for (unsigned int i = 0; i < timeForRiding; i++){
         if (analogRead(metal_input) > 500){
             Serial.println('Y');
-            stopCar();
+            stopCarBool = true;
         }
         else{
             delay(10);
