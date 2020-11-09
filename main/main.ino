@@ -119,7 +119,6 @@ void loop() {
             if (stopCarBool == false){
                 if (getRightUS() > 20 and getLeftUS() > 20){
                     if (finished_ride == false){
-                        //do way stuff
                         right();
                         for (unsigned int i = Y * 10 + 1; i > 0; i--){
                             for (unsigned int i = X * 10 + 1; i > 0; i--){
