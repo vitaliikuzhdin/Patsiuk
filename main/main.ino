@@ -102,7 +102,6 @@ void loop() {
     parsing();
     if (doneParsing){
         doneParsing = false;
-        rightTurn = false;
         if (joystickMode){
             X *= 2;//because joystick max is 127
             Y *= 2;
@@ -124,6 +123,7 @@ void loop() {
             }
         }
         else if (joystickMode == false){
+          rightTurn = false;
             right();
             for (unsigned int i = Y * 10 + 1; i > 0; i--){
                 for (unsigned int o = X * 10 + 1; o > 0; o--){
