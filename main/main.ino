@@ -43,7 +43,7 @@ GMotor RIGHT_BACK (DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, HIGH);
 GMotor LEFT_FRONT (DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
 GMotor LEFT_BACK (DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
-boolean joystickMode, doneParsing, startParsing, readMod, finished_ride, rightTurn, stopCarBool;
+boolean joystickMode, doneParsing, startParsing, readMod, rightTurn, stopCarBool;
 int angle, xTravel, yTravel, X, Y;
 byte timesAvoided;
 String string_convert;
@@ -101,6 +101,8 @@ void loop() {
     boolean returnToOriginal = false;
     parsing();
     if (doneParsing){
+        doneParsing = false;
+        rightTurn = false;
         if (joystickMode){
             X *= 2;//because joystick max is 127
             Y *= 2;
@@ -131,42 +133,53 @@ void loop() {
                         }
                         if (getRightUS() > 11 and getLeftUS() > 11){
                             if (rightTurn){
+                                rightTurn = false;
                                 right();
                                 forward();
-                                right();
-                                rightTurn = false;
                             }
                             else{//leftTurn
+                                rightTurn = true; 
                                 left();
                                 forward();
                                 left();
-                                rightTurn = true; 
                            }
                         }
                         else{//(getRightUS() < 20 and getLeftUS() < 20)
                             while (getRightUS() < 11 and getLeftUS() < 11){
+                                returnToOriginal = true;
                                 timesAvoided++;
                                 right();
                                 forward();
                                 right();
-                                returnToOriginal = true;
                             }
+                            forward();
+                            forward();
                             if (returnToOriginal){
                                 returnToOriginal = false;
                                 left();
                                 for (byte z = 0; z < timesAvoided; z++){
                                     forward();
                                 }
+                                timesAvoided = 0;
                                 right();
+                                o += 2;
                             }
                         }
                     }
                     else{//(stopCarBool == true)
                         stopCar();
-                        Serial.println('Y');  
+                        Serial.println('Y');
+                        angle = 0;
+                        xTravel= 0;
+                        yTravel = 0; 
                     }
                 }
             }
+            //after ride is finished
+            returnHome();
+            angle = 0;
+            xTravel= 0;
+            yTravel = 0;
         }
     }    
 }
@@ -276,13 +289,13 @@ void back(){
 }
 
 void stopCar(){
-    RIGHT_FRONT.smoothTick(0);
-    RIGHT_BACK.smoothTick(0);
-    LEFT_FRONT.smoothTick(0);
-    LEFT_BACK.smoothTick(0);
+    RIGHT_FRONT.setSpeed(0);
+    RIGHT_BACK.setSpeed(0);
+    LEFT_FRONT.setSpeed(0);
+    LEFT_BACK.setSpeed(0);
 }
 
-void return_home(){
+void returnHome(){
     //return home Y
     if (yTravel > 0){
         while (angle != 180){
@@ -321,7 +334,6 @@ void return_home(){
     while (angle != 0){
         right();
         angle = 0;
-        finished_ride = true;
     }
     Serial.println('e');
 }
