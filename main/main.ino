@@ -144,7 +144,7 @@ void loop() {
                                 left();
                            }
                         }
-                        else{//(getRightUS() < 20 and getLeftUS() < 20)
+                        else{//(getRightUS() < 11 and getLeftUS() < 11)
                             while (getRightUS() < 11 and getLeftUS() < 11){
                                 returnToOriginal = true;
                                 timesAvoided++;
@@ -289,10 +289,10 @@ void back(){
 }
 
 void stopCar(){
-    RIGHT_FRONT.setSpeed(0);
-    RIGHT_BACK.setSpeed(0);
-    LEFT_FRONT.setSpeed(0);
-    LEFT_BACK.setSpeed(0);
+    RIGHT_FRONT.smoothTick(0);
+    RIGHT_BACK.smoothTick(0);
+    LEFT_FRONT.smoothTick(0);
+    LEFT_BACK.smoothTick(0);
 }
 
 void returnHome(){
