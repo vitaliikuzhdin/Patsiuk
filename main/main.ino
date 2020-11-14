@@ -3,7 +3,7 @@
 //test and change
 #define timeForRiding 100//must be 10 cm
 #define timeForTurning 100//must be 90 degrees
-#define minDuty 50//motor must start at this speed
+#define minDuty 50//motors should start at this speed
 #define smoothSpeed 50
 #define RIGHT_FRONT_DIRECTION NORMAL//NORMAL or REVERSE
 #define RIGHT_BACK_DIRECTION NORMAL
