@@ -37,7 +37,7 @@
 NewPing RIGHT_SONAR (RIGHT_TRIG, RIGHT_ECHO, MAX_SONAR_DISTANCE);
 NewPing LEFT_SONAR (LEFT_TRIG, LEFT_ECHO, MAX_SONAR_DISTANCE);
 
-#include <GyverMotor.h>//documentation: https://alexgyver.ru/gyvermotor/
+#include <GyverMotor.h>// documentation: https://alexgyver.ru/gyvermotor/
 GMotor RIGHT_FRONT (DRIVER2WIRE, RIGHT_FRONT_D, RIGHT_FRONT_PWM, HIGH);
 GMotor RIGHT_BACK (DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, HIGH);
 GMotor LEFT_FRONT (DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
@@ -45,7 +45,7 @@ GMotor LEFT_BACK (DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
 boolean joystickMode, doneParsing, startParsing, readMod, rightTurn, stopCarBool;
 int angle, xTravel, yTravel, X, Y;
-byte timesAvoided;
+byte timesAvoidedX, timesAvoidedY;
 String string_convert;
 
 void setup(){
@@ -98,18 +98,28 @@ void setup(){
 }
 
 void loop() {
-    boolean returnToOriginal = false;
     parsing();
     if (doneParsing){
         doneParsing = false;
         if (joystickMode){
-            X *= 2;//because joystick max is 127
-            Y *= 2;
+            if (X != 127){
+                X *= 2;
+            }
+            else{
+                X = X * 2 - 1;  
+            }
+            if (Y != 127){
+                Y *= 2;
+            }
+            else{
+                Y = Y * 2 - 1;
+            }
             
             RIGHT_FRONT.smoothTick(Y - X);
             RIGHT_BACK.smoothTick(Y - X);
             LEFT_FRONT.smoothTick(Y + X);
             LEFT_BACK.smoothTick(Y + X);
+            
             X = 0;
             Y = 0;
 
@@ -123,7 +133,7 @@ void loop() {
             }
         }
         else if (joystickMode == false){
-          rightTurn = false;
+            rightTurn = false;
             right();
             for (unsigned int i = Y * 10 + 1; i > 0; i--){
                 for (unsigned int o = X * 10 + 1; o > 0; o--){
@@ -145,9 +155,10 @@ void loop() {
                            }
                         }
                         else{//(getRightUS() < 11 and getLeftUS() < 11)
+                            boolean returnToOriginal = false;
                             while (getRightUS() < 11 and getLeftUS() < 11){
                                 returnToOriginal = true;
-                                timesAvoided++;
+                                timesAvoidedX++;
                                 right();
                                 forward();
                                 right();
@@ -157,10 +168,10 @@ void loop() {
                             if (returnToOriginal){
                                 returnToOriginal = false;
                                 left();
-                                for (byte z = 0; z < timesAvoided; z++){
+                                for (byte z = 0; z < timesAvoidedX; z++){
                                     forward();
                                 }
-                                timesAvoided = 0;
+                                timesAvoidedX = 0;
                                 right();
                                 o += 2;
                             }
@@ -366,8 +377,7 @@ void parsing(){
             }
         }
         if (incomingChar == '$'){
-            readMod = true;
-            doneParsing = false;            
+            readMod = true;    
         }
         if (incomingChar == ' '){
              startParsing = true;
