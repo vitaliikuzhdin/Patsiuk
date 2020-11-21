@@ -70,7 +70,7 @@ void setup(){
     pinMode(LEFT_SONAR_VCC, OUTPUT);
 
     digitalWrite(RIGHT_SONAR_VCC, HIGH);//power for right sonar
-    digitalWrite(LEFT_SONAR_VCC, HIGH);//power for left sonar
+    digitalWrite(LEFT_SONAR_VCC, HIGH); //power for left sonar
 
     RIGHT_FRONT.setResolution(8);
     RIGHT_BACK.setResolution(8);
@@ -182,7 +182,7 @@ void loop(){
                             }
                             right();
                             
-                            if (noObstacles() == false) {
+                            if (noObstacles() == false){
                                 goto avoidObstacles;  
                             }
                             else{//done avoiding, return to original Y
