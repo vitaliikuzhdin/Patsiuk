@@ -105,8 +105,8 @@ void loop(){
         if (joystickMode){ 
             RIGHT_FRONT.smoothTick(Y - X);
             RIGHT_BACK.smoothTick(Y - X);
-            LEFT_FRONT.smoothTick(Y + Y);
-            LEFT_BACK.smoothTick(Y + Y);
+            LEFT_FRONT.smoothTick(Y + X);
+            LEFT_BACK.smoothTick(Y + X);
             
             X = 0;
             Y = 0;
