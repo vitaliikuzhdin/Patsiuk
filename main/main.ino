@@ -1,9 +1,9 @@
-//TODO: improve and fix obstacle avoidance
+//TODO: make returnHome() obstacle avoidance
 
-//test and change
-#define timeForRiding 100//must be 10 cm
-#define timeForTurning 100//must be 90 degrees
-#define minDuty 50//motors should start at this speed
+/*=============SETTINGS=============*/
+#define timeForRiding 100           //must be 10 cm
+#define timeForTurning 100          //must be 90 degrees
+#define minDuty 50                  //motors should start at this speed
 #define smoothSpeed 50
 #define RIGHT_FRONT_DIRECTION NORMAL//NORMAL or REVERSE
 #define RIGHT_BACK_DIRECTION NORMAL
@@ -11,6 +11,7 @@
 #define LEFT_BACK_DIRECTION NORMAL
 #define MAX_SONAR_DISTANCE 100
 
+/*=========PINS=========*/
 #define RIGHT_FRONT_PWM 5
 #define RIGHT_FRONT_D 2
 
@@ -33,20 +34,20 @@
 
 #define metal_input A5
 
+/*============================LIBRARIES=================================*/
 #include <NewPing.h>//documentation: https://bitbucket.org/teckel12/arduino-new-ping/wiki/Home
-NewPing RIGHT_SONAR (RIGHT_TRIG, RIGHT_ECHO, MAX_SONAR_DISTANCE);
-NewPing LEFT_SONAR (LEFT_TRIG, LEFT_ECHO, MAX_SONAR_DISTANCE);
+NewPing RIGHT_SONAR(RIGHT_TRIG, RIGHT_ECHO, MAX_SONAR_DISTANCE);
+NewPing LEFT_SONAR(LEFT_TRIG, LEFT_ECHO, MAX_SONAR_DISTANCE);
 
-#include <GyverMotor.h>// documentation: https://alexgyver.ru/gyvermotor/
-GMotor RIGHT_FRONT (DRIVER2WIRE, RIGHT_FRONT_D, RIGHT_FRONT_PWM, HIGH);
-GMotor RIGHT_BACK (DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, HIGH);
-GMotor LEFT_FRONT (DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
-GMotor LEFT_BACK (DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
+#include <GyverMotor.h>//documentation: https://alexgyver.ru/gyvermotor/
+GMotor RIGHT_FRONT(DRIVER2WIRE, RIGHT_FRONT_D, RIGHT_FRONT_PWM, HIGH);
+GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, HIGH);
+GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
+GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
-boolean joystickMode, doneParsing, startParsing, readMod, rightTurn, stopCarBool;
+/*==============GLOBAL VARIABLES=============*/
+boolean joystickMode, doneParsing, stopCarBool;
 int angle, xTravel, yTravel, X, Y;
-byte timesAvoidedX, timesAvoidedY;
-String string_convert;
 
 void setup(){
     Serial.begin(9600);
@@ -97,28 +98,15 @@ void setup(){
     LEFT_BACK.setSmoothSpeed(smoothSpeed);
 }
 
-void loop() {
+void loop(){
     parsing();
     if (doneParsing){
         doneParsing = false;
-        if (joystickMode){
-            if (X != 127){
-                X *= 2;
-            }
-            else{
-                X = X * 2 - 1;  
-            }
-            if (Y != 127){
-                Y *= 2;
-            }
-            else{
-                Y = Y * 2 - 1;
-            }
-            
+        if (joystickMode){ 
             RIGHT_FRONT.smoothTick(Y - X);
             RIGHT_BACK.smoothTick(Y - X);
-            LEFT_FRONT.smoothTick(Y + X);
-            LEFT_BACK.smoothTick(Y + X);
+            LEFT_FRONT.smoothTick(Y + Y);
+            LEFT_BACK.smoothTick(Y + Y);
             
             X = 0;
             Y = 0;
@@ -132,83 +120,110 @@ void loop() {
                 Serial.println('n');
             }
         }
-        else if (joystickMode == false){
-            rightTurn = false;
-            right();
+        else{//(joystickMode == false)
+            stopCarBool = false;
+            xTravel = 0;
+            yTravel = 0;
+            angle = 0;
+            String commands = "";
+            boolean rightTurn = false;
+            
             for (unsigned int i = Y * 10 + 1; i > 0; i--){
                 for (unsigned int o = X * 10 + 1; o > 0; o--){
-                    if (stopCarBool == false){
-                        if (getRightUS() > 11 and getLeftUS() > 11){
-                            forward();  
-                        }
-                        if (getRightUS() > 11 and getLeftUS() > 11){
-                            if (rightTurn){
-                                rightTurn = false;
-                                right();
-                                forward();
-                            }
-                            else{//leftTurn
-                                rightTurn = true; 
-                                left();
-                                forward();
-                                left();
-                           }
-                        }
-                        else{//(getRightUS() < 11 and getLeftUS() < 11)
-                            boolean returnToOriginal = false;
-                            while (getRightUS() < 11 and getLeftUS() < 11){
-                                returnToOriginal = true;
-                                timesAvoidedX++;
-                                right();
-                                forward();
-                                right();
-                            }
-                            forward();
-                            forward();
-                            if (returnToOriginal){
-                                returnToOriginal = false;
-                                left();
-                                for (byte z = 0; z < timesAvoidedX; z++){
-                                    forward();
-                                }
-                                timesAvoidedX = 0;
-                                right();
-                                o += 2;
-                            }
-                        }
-                    }
-                    else{//(stopCarBool == true)
-                        stopCar();
-                        Serial.println('Y');
-                        angle = 0;
-                        xTravel= 0;
-                        yTravel = 0; 
-                    }
+                    commands += 'f';
+                }
+                if (rightTurn){
+                    rightTurn = false;
+                    commands += "rfr";
+                }
+                else{//(rightTurn == false)
+                    rightTurn = true;
+                    commands += "lfl";
                 }
             }
-            //after ride is finished
-            returnHome();
-            angle = 0;
-            xTravel= 0;
-            yTravel = 0;
+
+            right();
+            for (unsigned int currentCommand = 0; currentCommand < commands.length(); currentCommand++){
+                if (stopCarBool == false){
+                    byte timesAvoidedX = 0;
+                    if (noObstacles()){
+                        if (commands.charAt(currentCommand) == 'f'){
+                            if (timesAvoidedX == 0){
+                                forward();
+                            }
+                            else{
+                                timesAvoidedX--;  
+                            }
+                        }
+                        else if (commands.charAt(currentCommand) == 'r'){
+                            right();
+                            timesAvoidedX = 0;
+                        }
+                        else if (commands.charAt(currentCommand) == 'l'){
+                            left();
+                            timesAvoidedX = 0;
+                        }
+                    }
+                    else{//(noObstacles() == false)
+                        byte timesAvoidedY = 0;
+                        avoidObstacles:
+                            while (noObstacles() == false){
+                                right();
+                                forward();
+                                left();
+                                timesAvoidedX++;
+                            }
+                            left();
+                            while (noObstacles() == false){
+                                right();
+                                forward();
+                                left();
+                                timesAvoidedY++;  
+                            }
+                            right();
+                            
+                            if (noObstacles() == false) {
+                                goto avoidObstacles;  
+                            }
+                            else{//done avoiding, return to original Y
+                                left();
+                                for (byte i = 0; i < timesAvoidedY; i++){
+                                    forward();
+                                }
+                                right();
+                            }
+                    }
+                }
+                else{//(stopCarBool == true)
+                    stopCar();
+                }  
+            }
+            if (stopCarBool == false){
+                returnHome();  
+            }
         }
     }    
 }
 
-byte getLeftUS(){
-    unsigned int leftSonarSumm = 0;
-    for (byte i = 0; i < 20; i++){
-        leftSonarSumm += LEFT_SONAR.ping_cm(); 
-    }
-    return leftSonarSumm / 20;
-}
-
-byte getRightUS(){
+boolean noObstacles(){
     unsigned int rightSonarSumm = 0;
-    for (byte i = 0; i < 20; i++){
+    for (byte i = 0; i < 10; i++){
         rightSonarSumm += RIGHT_SONAR.ping_cm(); 
     }
-    return rightSonarSumm / 20;
+    rightSonarSumm /= 10;
+    
+    unsigned int leftSonarSumm = 0;
+    for (byte i = 0; i < 10; i++){
+        leftSonarSumm += LEFT_SONAR.ping_cm(); 
+    }
+    leftSonarSumm /= 10;
+    
+    if (rightSonarSumm <= 11 or leftSonarSumm <= 11){
+        return false;  
+    }
+    else{
+        return true;  
+    }
 }
 
 void right(){
@@ -245,48 +260,13 @@ void forward(){
     LEFT_FRONT.smoothTick(255);
     LEFT_BACK.smoothTick(255);
 
-    if (angle == 0){
+    if (angle == 0 or angle == 90){
         yTravel++;    
-    }
-    else if (angle == 90){
-        xTravel++;    
-    }
-    else if (angle == 180){
-        yTravel--;    
-    }
-    else{//angle == 270
+    }  
+    else{//(angle == 180 or angle == 270)
          xTravel--; 
     }
-    for (unsigned int i = 0; i < timeForRiding; i++){
-        if (analogRead(metal_input) > 500){
-            Serial.println('Y');
-            stopCarBool = true;
-        }
-        else{
-            Serial.println('n');
-            delay(10);
-        }
-    }
-}
-
-void back(){
-    RIGHT_FRONT.smoothTick(-255);
-    RIGHT_BACK.smoothTick(-255);
-    LEFT_FRONT.smoothTick(-255);
-    LEFT_BACK.smoothTick(-255);
-
-    if (angle == 0){
-        yTravel--;    
-    }
-    else if (angle == 90){
-        xTravel--;    
-    }
-    else if (angle == 180){
-        yTravel++;    
-    }
-    else{//angle == 270
-         xTravel++; 
-    }
+    
     for (unsigned int i = 0; i < timeForRiding; i++){
         if (analogRead(metal_input) > 500){
             Serial.println('Y');
@@ -294,7 +274,6 @@ void back(){
         }
         else{
             delay(10);
-            Serial.println('n');
         }
     }
 }
@@ -304,6 +283,7 @@ void stopCar(){
     RIGHT_BACK.smoothTick(0);
     LEFT_FRONT.smoothTick(0);
     LEFT_BACK.smoothTick(0);
+    Serial.println('Y');
 }
 
 void returnHome(){
@@ -344,13 +324,15 @@ void returnHome(){
     //set angle to 0
     while (angle != 0){
         right();
-        angle = 0;
     }
+
     Serial.println('e');
 }
 
 void parsing(){
     if (Serial.available() > 0){
+        static boolean startParsing, readMod;
+        static String string_convert;
         char incomingChar = Serial.read();  
         if (readMod){
             readMod = false;
@@ -359,7 +341,7 @@ void parsing(){
             }
             else if (incomingChar == '2'){
                 joystickMode = false;
-            }      
+            }
         }
         if (startParsing){
             if (incomingChar == ','){
