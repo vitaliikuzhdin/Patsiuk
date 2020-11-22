@@ -105,18 +105,21 @@ void loop(){
     parsing();
     if (doneParsing){
         doneParsing = false;
-        if (joystickMode){ 
-            RIGHT_FRONT.smoothTick(Y - X);
-            RIGHT_BACK.smoothTick(Y - X);
-            LEFT_FRONT.smoothTick(Y + X);
-            LEFT_BACK.smoothTick(Y + X);
-            
-            X = 0;
+        if (joystickMode){
+            int dutyR = Y - X;
+            int dutyL = Y + X;
+
             Y = 0;
+            X = 0;
+            
+            RIGHT_FRONT.smoothTick(dutyR);
+            RIGHT_BACK.smoothTick(dutyR);
+            LEFT_FRONT.smoothTick(dutyL);
+            LEFT_BACK.smoothTick(dutyL);
 
             if (analogRead(metal_input) >= 400){
                 Serial.flush();
-                Serial.println('Y');  
+                Serial.println('Y');
             }
             else{
                 Serial.flush();
@@ -131,7 +134,8 @@ void loop(){
             angle = 0;
             String commands = "";
             boolean rightTurn = false;
-            
+
+            //generate route
             for (unsigned int i = Y * 10 + 1; i > 0; i--){
                 for (unsigned int o = X * 10 + 1; o > 0; o--){
                     commands += 'f';
@@ -204,6 +208,7 @@ void loop(){
                     stopCar();
                 }  
             }
+            //after finished ride
             if (stopCarBool == false){
                 returnHome();  
             }
@@ -359,7 +364,7 @@ void parsing(){
     if (Serial.available() > 0){
         static boolean startParsing, readMod;
         static String string_convert;
-        char incomingChar = Serial.read();  
+        char incomingChar = Serial.read();
         if (readMod){
             readMod = false;
             if (incomingChar == '1'){
