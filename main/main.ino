@@ -1,3 +1,8 @@
+/*Sketch for SAM "Patsiuk" project
+ * Fully written by Vitaliy Kuzhdin (@vitaliy172), 2020
+ * For more information, look at ashematic
+ */
+
 /*=============SETTINGS=============*/
 #define timeForRiding 100             //must be 10 cm
 #define timeForTurning 100            //must be 90 degrees
@@ -9,7 +14,7 @@
 #define LEFT_BACK_DIRECTION   NORMAL
 #define MAX_SONAR_DISTANCE 100
 
-/*=========PINS=========*/
+/*==========PINS=========*/
 #define RIGHT_FRONT_PWM 5
 #define RIGHT_FRONT_D 2
 
