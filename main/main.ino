@@ -1,14 +1,14 @@
 //TODO: make returnHome() obstacle avoidance
 
 /*=============SETTINGS=============*/
-#define timeForRiding 100           //must be 10 cm
-#define timeForTurning 100          //must be 90 degrees
-#define minDuty 50                  //motors should start at this speed
+#define timeForRiding 100             //must be 10 cm
+#define timeForTurning 100            //must be 90 degrees
+#define minDuty 50                    //motors should start at this speed
 #define smoothSpeed 50
-#define RIGHT_FRONT_DIRECTION NORMAL//NORMAL or REVERSE
-#define RIGHT_BACK_DIRECTION NORMAL
-#define LEFT_FRONT_DIRECTION NORMAL
-#define LEFT_BACK_DIRECTION NORMAL
+#define RIGHT_FRONT_DIRECTION NORMAL  //NORMAL or REVERSE
+#define RIGHT_BACK_DIRECTION  NORMAL
+#define LEFT_FRONT_DIRECTION  NORMAL
+#define LEFT_BACK_DIRECTION   NORMAL
 #define MAX_SONAR_DISTANCE 100
 
 /*=========PINS=========*/
@@ -121,6 +121,7 @@ void loop(){
             }
         }
         else{//(joystickMode == false)
+            Serial.println('n');
             stopCarBool = false;
             xTravel = 0;
             yTravel = 0;
@@ -152,7 +153,7 @@ void loop(){
                                 forward();
                             }
                             else{
-                                timesAvoidedX--;  
+                                timesAvoidedX--;
                             }
                         }
                         else if (commands.charAt(currentCommand) == 'r'){
@@ -167,6 +168,7 @@ void loop(){
                     else{//(noObstacles() == false)
                         byte timesAvoidedY = 0;
                         avoidObstacles:
+                            //avoid obstacles X
                             while (noObstacles() == false){
                                 right();
                                 forward();
@@ -174,16 +176,17 @@ void loop(){
                                 timesAvoidedX++;
                             }
                             left();
+                            //avoid obstacles Y
                             while (noObstacles() == false){
                                 right();
                                 forward();
                                 left();
-                                timesAvoidedY++;  
+                                timesAvoidedY++;
                             }
                             right();
                             
                             if (noObstacles() == false){
-                                goto avoidObstacles;  
+                                goto avoidObstacles;
                             }
                             else{//done avoiding, return to original Y
                                 left();
@@ -208,21 +211,21 @@ void loop(){
 boolean noObstacles(){
     unsigned int rightSonarSumm = 0;
     for (byte i = 0; i < 10; i++){
-        rightSonarSumm += RIGHT_SONAR.ping_cm(); 
+        rightSonarSumm += RIGHT_SONAR.ping_cm();
     }
     rightSonarSumm /= 10;
     
     unsigned int leftSonarSumm = 0;
     for (byte i = 0; i < 10; i++){
-        leftSonarSumm += LEFT_SONAR.ping_cm(); 
+        leftSonarSumm += LEFT_SONAR.ping_cm();
     }
     leftSonarSumm /= 10;
     
     if (rightSonarSumm <= 11 or leftSonarSumm <= 11){
-        return false;  
+        return false;
     }
     else{
-        return true;  
+        return true;
     }
 }
 
@@ -234,7 +237,7 @@ void right(){
 
     angle += 90;
     if (angle == 360){
-        angle = 0;    
+        angle = 0;
     }
     
     delay(timeForTurning);
@@ -248,7 +251,7 @@ void left(){
 
     angle -= 90;
     if (angle == 360){
-        angle = 0;    
+        angle = 0;
     }
     
     delay(timeForTurning);
@@ -261,15 +264,15 @@ void forward(){
     LEFT_BACK.smoothTick(255);
 
     if (angle == 0 or angle == 90){
-        yTravel++;    
+        yTravel++;
     }  
     else{//(angle == 180 or angle == 270)
-         xTravel--; 
+         xTravel--;
     }
     
     for (unsigned int i = 0; i < timeForRiding; i++){
         if (analogRead(metal_input) > 500){
-            Serial.println('Y');
+            Serial.println('Y');//Found!
             stopCarBool = true;
         }
         else{
@@ -283,50 +286,70 @@ void stopCar(){
     RIGHT_BACK.smoothTick(0);
     LEFT_FRONT.smoothTick(0);
     LEFT_BACK.smoothTick(0);
-    Serial.println('Y');
 }
 
 void returnHome(){
-    //return home Y
-    if (yTravel > 0){
-        while (angle != 180){
-            right();    
+    boolean doneReturning = false;
+    while (doneReturning == false){
+        if (noObstacles()){
+            //return home Y
+            if (yTravel > 0){
+                while (angle != 180){
+                    right();  
+                }
+                forward();
+            }
+            else if (yTravel < 0){
+                while (angle != 0){
+                    right();
+                }
+                forward();
+            }
+            //return home X
+            else if (xTravel > 0){
+                while (angle != 270){
+                    right();  
+                }
+                forward();
+            }
+            else if (xTravel < 0){
+                while (angle != 90){
+                    right();
+                }
+                forward();
+            }
+            // set angle to 0
+            else if (angle != 0){
+                right();
+            }
+            if (angle == 0){
+                doneReturning = true;
+            }
         }
-        for (byte i = 0; i < yTravel; i++){
-            forward();    
+        else{//(noObstacles == false)
+            avoidObstacles:
+                //avoid obstacles X
+                while (noObstacles() == false){
+                    right();
+                    forward();
+                    left();
+                }
+                left();
+                //avoid obstacles Y
+                while (noObstacles() == false){
+                    right();
+                    forward();
+                    left();
+                }
+                right();
+                            
+                if (noObstacles() == false){
+                    goto avoidObstacles;
+                }
         }
     }
-    else{//yTravel < 0
-        while (angle != 0){
-            right();    
-        }
-        for (byte i = 0; i > yTravel; i--){
-            forward();    
-        }
-    }
-    //return home X
-    if (xTravel > 0){
-        while (angle != 270){
-            right();  
-        }
-        for (byte i = 0; i < xTravel; i++){
-            forward();  
-        } 
-    }
-    else{//xTravel < 0
-        while (angle != 90){
-            right();  
-        }
-        for (byte i = 0; i > xTravel; i--){
-            forward();  
-        }
-    }
-    //set angle to 0
-    while (angle != 0){
-        right();
-    }
-
-    Serial.println('e');
+    
+    Serial.println('e');//Mission accomplished, but nothing was found
 }
 
 void parsing(){
@@ -355,11 +378,11 @@ void parsing(){
                 string_convert = "";
             }
             else{
-                string_convert += incomingChar;  
+                string_convert += incomingChar;
             }
         }
         if (incomingChar == '$'){
-            readMod = true;    
+            readMod = true;
         }
         if (incomingChar == ' '){
              startParsing = true;
