@@ -365,7 +365,7 @@ void parsing(){
             if (incomingChar == '1'){
                 joystickMode = true;
             }
-            else if (incomingChar == '2'){
+            else{//(incomingChar == '2')
                 joystickMode = false;
             }
         }
@@ -387,7 +387,7 @@ void parsing(){
         if (incomingChar == '$'){
             readMod = true;
         }
-        if (incomingChar == ' '){
+        else if (incomingChar == ' '){
              startParsing = true;
         }
     }
