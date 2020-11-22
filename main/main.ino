@@ -1,5 +1,3 @@
-//TODO: make returnHome() obstacle avoidance
-
 /*=============SETTINGS=============*/
 #define timeForRiding 100             //must be 10 cm
 #define timeForTurning 100            //must be 90 degrees
