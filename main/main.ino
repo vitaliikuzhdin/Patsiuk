@@ -1,6 +1,6 @@
 /*Sketch for SAM "Patsiuk" project
  * Fully written by Vitaliy Kuzhdin (@vitaliy172), 2020
- * For more information, look at ashematic
+ * For more information, look at shematic
  */
 
 /*=============SETTINGS=============*/
