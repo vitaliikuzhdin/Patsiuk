@@ -105,12 +105,10 @@ void loop(){
     parsing();
     if (doneParsing){
         doneParsing = false;
+        
         if (joystickMode){
             int dutyR = Y - X;
             int dutyL = Y + X;
-
-            Y = 0;
-            X = 0;
             
             RIGHT_FRONT.smoothTick(dutyR);
             RIGHT_BACK.smoothTick(dutyR);
@@ -126,6 +124,7 @@ void loop(){
                 Serial.println('n');
             }
         }
+        
         else{//(joystickMode == false)
             Serial.println('n');
             stopCarBool = false;
@@ -163,10 +162,12 @@ void loop(){
                                 timesAvoidedX--;
                             }
                         }
+                        
                         else if (commands.charAt(currentCommand) == 'r'){
                             right();
                             timesAvoidedX = 0;
                         }
+                        
                         else if (commands.charAt(currentCommand) == 'l'){
                             left();
                             timesAvoidedX = 0;
@@ -183,6 +184,7 @@ void loop(){
                                 timesAvoidedX++;
                             }
                             left();
+                            
                             //avoid obstacles Y
                             while (noObstacles() == false){
                                 right();
@@ -298,6 +300,7 @@ void stopCar(){
 
 void returnHome(){
     boolean doneReturning = false;
+    
     while (doneReturning == false){
         if (noObstacles()){
             //return home Y
@@ -307,6 +310,7 @@ void returnHome(){
                 }
                 forward();
             }
+            
             else if (yTravel < 0){
                 while (angle != 0){
                     right();
@@ -320,12 +324,14 @@ void returnHome(){
                 }
                 forward();
             }
+            
             else if (xTravel < 0){
                 while (angle != 90){
                     right();
                 }
                 forward();
             }
+            
             // set angle to 0
             else if (angle != 0){
                 right();
@@ -334,6 +340,7 @@ void returnHome(){
                 doneReturning = true;
             }
         }
+        
         else{//(noObstacles == false)
             avoidObstacles:
                 //avoid obstacles X
@@ -343,6 +350,7 @@ void returnHome(){
                     left();
                 }
                 left();
+                
                 //avoid obstacles Y
                 while (noObstacles() == false){
                     right();
@@ -364,22 +372,15 @@ void parsing(){
     if (Serial.available() > 0){
         static boolean startParsing, readMod;
         static String string_convert;
+        
         char incomingChar = Serial.read();
-        if (readMod){
-            readMod = false;
-            if (incomingChar == '1'){
-                joystickMode = true;
-            }
-            else{//(incomingChar == '2')
-                joystickMode = false;
-            }
-        }
+
         if (startParsing){
-            if (incomingChar == ','){
+            if (incomingChar == ','){//sign to start recieving Y package
                 X = string_convert.toInt();
                 string_convert = "";
             }
-            else if (incomingChar == ';'){
+            else if (incomingChar == ';'){//sign to end  recieving data
                 startParsing = false;
                 doneParsing = true;
                 Y = string_convert.toInt();
@@ -389,10 +390,22 @@ void parsing(){
                 string_convert += incomingChar;
             }
         }
-        if (incomingChar == '$'){
+
+        if (readMod){
+            readMod = false;
+            if (incomingChar == '1'){
+                joystickMode = true;
+            }
+            else{//(incomingChar == '2')
+                joystickMode = false;
+            }
+        }
+        
+        if (incomingChar == '$'){//sign to start recieving data
             readMod = true;
         }
-        else if (incomingChar == ' '){
+        
+        else if (incomingChar == ' '){//sign to start recieving X package
              startParsing = true;
         }
     }
