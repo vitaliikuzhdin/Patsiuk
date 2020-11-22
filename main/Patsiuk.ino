@@ -37,7 +37,7 @@
 
 #define metal_input A5
 
-/*============================LIBRARIES=================================*/
+/*============================LIBRARIES===============================*/
 #include <NewPing.h>//documentation: https://bitbucket.org/teckel12/arduino-new-ping/wiki/Home
 NewPing RIGHT_SONAR(RIGHT_TRIG, RIGHT_ECHO, MAX_SONAR_DISTANCE);
 NewPing LEFT_SONAR(LEFT_TRIG, LEFT_ECHO, MAX_SONAR_DISTANCE);
