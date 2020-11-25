@@ -212,7 +212,8 @@ void loop(){
             }
             //after finished ride
             if (stopCarBool == false){
-                returnHome();  
+                returnHome();
+                stopCar();
             }
         }
     }    
@@ -317,6 +318,7 @@ void returnHome(){
                 }
                 forward();
             }
+
             //return home X
             else if (xTravel > 0){
                 while (angle != 270){
