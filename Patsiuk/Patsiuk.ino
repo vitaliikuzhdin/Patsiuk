@@ -1,43 +1,49 @@
-/*Sketch for SAM "Patsiuk" project
- * Fully written by Vitalii Kuzhdin (@vitaliy172), 2020
- * For more information, look at shematic
- */
+/*
+* Sketch for SAM "Patsiuk" project
+* Fully written by Vitalii Kuzhdin (@vitaliy172), 2020
+* For more information, look at shematic
+*/
 
 /*=============SETTINGS=============*/
-#define timeForRiding 100             //must be 10 cm
-#define timeForTurning 100            //must be 90 degrees
-#define minDuty 50                    //motors should start at this speed
-#define smoothSpeed 50
-#define RIGHT_FRONT_DIRECTION NORMAL  //NORMAL or REVERSE
+#define timeForRiding         5000   //ms, must be 10 cm
+#define timeForTurning        5000   //ms, must be 90 degrees
+#define minDuty               50     //motors should start at this speed
+#define smoothSpeed           50
+#define RIGHT_FRONT_DIRECTION NORMAL //NORMAL or REVERSE
 #define RIGHT_BACK_DIRECTION  NORMAL
 #define LEFT_FRONT_DIRECTION  NORMAL
 #define LEFT_BACK_DIRECTION   NORMAL
-#define MAX_SONAR_DISTANCE 100
+#define MAX_SONAR_DISTANCE    100
 
-/*==========PINS=========*/
-#define RIGHT_FRONT_PWM 5
+/*==========PINS==========*/
+#define RIGHT_FRONT_PWM 3
 #define RIGHT_FRONT_D 2
 
-#define RIGHT_BACK_PWM 9
+#define RIGHT_BACK_PWM 10
 #define RIGHT_BACK_D A4
 
-#define LEFT_FRONT_PWM 6
-#define LEFT_FRONT_D 3
+#define LEFT_FRONT_PWM 9
+#define LEFT_FRONT_D 4
 
-#define LEFT_BACK_PWM 10
+#define LEFT_BACK_PWM 11
 #define LEFT_BACK_D A3
 
-#define RIGHT_TRIG 7
-#define RIGHT_ECHO 8
-#define RIGHT_SONAR_VCC 4
+#define RIGHT_TRIG 6
+#define RIGHT_ECHO 7
+#define RIGHT_SONAR_VCC 5
 
 #define LEFT_TRIG 12
 #define LEFT_ECHO 13
-#define LEFT_SONAR_VCC 11
+#define LEFT_SONAR_VCC 8
 
-#define metal_input A5
+#define METAL_PIN A5
 
-/*============================LIBRARIES===============================*/
+/*========MESSAGES========*/
+#define FOUND_MSG 'Y'
+#define NOT_FOUND_MSG 'n'
+#define DONE_RIDING_MSG 'e'
+
+/*==============================LIBRARIES==============================*/
 #include <NewPing.h>//documentation: https://bitbucket.org/teckel12/arduino-new-ping/wiki/Home
 NewPing RIGHT_SONAR(RIGHT_TRIG, RIGHT_ECHO, MAX_SONAR_DISTANCE);
 NewPing LEFT_SONAR(LEFT_TRIG, LEFT_ECHO, MAX_SONAR_DISTANCE);
@@ -48,18 +54,30 @@ GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, HIGH);
 GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, HIGH);
 GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, HIGH);
 
-/*==============GLOBAL VARIABLES=============*/
+#include <SoftwareSerial.h>
+SoftwareSerial BTserial (A2, A1);
+
+/*==============GLOBAL VARIABLES==============*/
 boolean joystickMode, doneParsing, stopCarBool;
 int angle, xTravel, yTravel, X, Y;
 
 void setup(){
     Serial.begin(9600);
-       
-    pinMode(metal_input, INPUT);
-    
+    BTserial.begin(9600);
+  
+    //D9 and D10 62.5 kHz PWM
+    TCCR1A = 0b00000001;
+    TCCR1B = 0b00001001;
+
+    //D3 and D11 62.5 kHz PWM
+    TCCR2B = 0b00000001;
+    TCCR2A = 0b00000011;
+
+    pinMode(METAL_PIN, INPUT);
+
     pinMode(RIGHT_FRONT_D, OUTPUT);
     pinMode(RIGHT_FRONT_PWM, OUTPUT);
-     
+
     pinMode(RIGHT_BACK_D, OUTPUT);
     pinMode(RIGHT_BACK_PWM, OUTPUT);
 
@@ -68,7 +86,7 @@ void setup(){
 
     pinMode(LEFT_BACK_D, OUTPUT);
     pinMode(LEFT_BACK_PWM, OUTPUT);
-    
+
     pinMode(RIGHT_SONAR_VCC, OUTPUT);
     pinMode(LEFT_SONAR_VCC, OUTPUT);
 
@@ -89,7 +107,7 @@ void setup(){
     RIGHT_BACK.setMinDuty(minDuty);
     LEFT_FRONT.setMinDuty(minDuty);
     LEFT_BACK.setMinDuty(minDuty);
-    
+
     RIGHT_FRONT.setMode(AUTO);
     RIGHT_BACK.setMode(AUTO);
     LEFT_FRONT.setMode(AUTO);
@@ -105,28 +123,28 @@ void loop(){
     parsing();
     if (doneParsing){
         doneParsing = false;
-        
         if (joystickMode){
-            int dutyR = Y - X;
-            int dutyL = Y + X;
-            
+            int dutyR = Y + X;
+            int dutyL = Y - X;
+
+            dutyR = constrain(dutyR, -255, 255);
+            dutyL = constrain(dutyL, -255, 255);
+          
             RIGHT_FRONT.smoothTick(dutyR);
             RIGHT_BACK.smoothTick(dutyR);
             LEFT_FRONT.smoothTick(dutyL);
             LEFT_BACK.smoothTick(dutyL);
 
-            if (analogRead(metal_input) >= 400){
-                Serial.flush();
-                Serial.println('Y');
+            if (analogRead(METAL_PIN) >= 400){
+                BTserial.flush();
+                BTserial.println(FOUND_MSG);
+            }else{ //(analogRead(METAL_PIN) < 400)
+                BTserial.flush();
+                BTserial.println(NOT_FOUND_MSG);
             }
-            else{
-                Serial.flush();
-                Serial.println('n');
-            }
-        }
-        
-        else{//(joystickMode == false)
-            Serial.println('n');
+            
+        }else{ //(joystickMode == false)
+            BTserial.println(NOT_FOUND_MSG);
             stopCarBool = false;
             xTravel = 0;
             yTravel = 0;
@@ -136,14 +154,13 @@ void loop(){
 
             //generate route
             for (unsigned int i = Y * 10 + 1; i > 0; i--){
-                for (unsigned int o = X * 10 + 1; o > 0; o--){
+                for (unsigned int j = X * 10 + 1; j > 0; j--){
                     commands += 'f';
                 }
                 if (rightTurn){
                     rightTurn = false;
                     commands += "rfr";
-                }
-                else{//(rightTurn == false)
+                }else{ //(rightTurn == false)
                     rightTurn = true;
                     commands += "lfl";
                 }
@@ -157,87 +174,85 @@ void loop(){
                         if (commands.charAt(currentCommand) == 'f'){
                             if (timesAvoidedX == 0){
                                 forward();
-                            }
-                            else{
+                            }else{
                                 timesAvoidedX--;
                             }
                         }
-                        
                         else if (commands.charAt(currentCommand) == 'r'){
                             right();
                             timesAvoidedX = 0;
                         }
-                        
                         else if (commands.charAt(currentCommand) == 'l'){
                             left();
                             timesAvoidedX = 0;
                         }
-                    }
-                    else{//(noObstacles() == false)
+                    }else{ //(noObstacles() == false)
                         byte timesAvoidedY = 0;
+                        
                         avoidObstacles:
-                            //avoid obstacles X
-                            while (noObstacles() == false){
-                                right();
-                                forward();
-                                left();
-                                timesAvoidedX++;
-                            }
+                        //avoid obstacles X
+                        while (noObstacles() == false){
+                            right();
+                            forward();
                             left();
+                            timesAvoidedX++;
+                        }
+                        left();
+                        
+                        //avoid obstacles Y
+                        while (noObstacles() == false){
+                            right();
+                            forward();
+                            left();
+                            timesAvoidedY++;
+                        }
+                        right();
+
+                        if (noObstacles() == false){
+                            goto avoidObstacles;
                             
-                            //avoid obstacles Y
-                            while (noObstacles() == false){
-                                right();
+                        }else{ //done avoiding, return to original Y
+                            left();
+                            for (byte i = 0; i < timesAvoidedY; i++){
                                 forward();
-                                left();
-                                timesAvoidedY++;
                             }
                             right();
-                            
-                            if (noObstacles() == false){
-                                goto avoidObstacles;
-                            }
-                            else{//done avoiding, return to original Y
-                                left();
-                                for (byte i = 0; i < timesAvoidedY; i++){
-                                    forward();
-                                }
-                                right();
-                            }
+                        }
                     }
-                }
-                else{//(stopCarBool == true)
+                }else{ //(stopCarBool)
                     stopCar();
-                }  
+                }
             }
-            //after finished ride
             if (stopCarBool == false){
                 returnHome();
                 stopCar();
             }
         }
-    }    
+    }
 }
 
 boolean noObstacles(){
+    stopCar();
+  
     unsigned int rightSonarSumm = 0;
     for (byte i = 0; i < 10; i++){
         rightSonarSumm += RIGHT_SONAR.ping_cm();
     }
     rightSonarSumm /= 10;
-    
+
     unsigned int leftSonarSumm = 0;
     for (byte i = 0; i < 10; i++){
         leftSonarSumm += LEFT_SONAR.ping_cm();
     }
     leftSonarSumm /= 10;
-    
+
     if (rightSonarSumm <= 11 or leftSonarSumm <= 11){
         return false;
-    }
-    else{
+    }else{
         return true;
     }
+
+    delay(29);//Library creator said so
 }
 
 void right(){
@@ -250,7 +265,7 @@ void right(){
     if (angle == 360){
         angle = 0;
     }
-    
+
     delay(timeForTurning);
 }
 
@@ -264,7 +279,7 @@ void left(){
     if (angle == 360){
         angle = 0;
     }
-    
+
     delay(timeForTurning);
 }
 
@@ -276,18 +291,16 @@ void forward(){
 
     if (angle == 0 or angle == 90){
         yTravel++;
-    }  
-    else{//(angle == 180 or angle == 270)
-         xTravel--;
+    }else{ //(angle == 180 or angle == 270)
+        xTravel--;
     }
-    
+
     for (unsigned int i = 0; i < timeForRiding; i++){
-        if (analogRead(metal_input) > 500){
-            Serial.println('Y');//Found!
+        if (analogRead(METAL_PIN) > 500){
+            BTserial.println(FOUND_MSG);//Found!
             stopCarBool = true;
-        }
-        else{
-            delay(10);
+        }else{
+            delay(1);
         }
     }
 }
@@ -301,17 +314,15 @@ void stopCar(){
 
 void returnHome(){
     boolean doneReturning = false;
-    
     while (doneReturning == false){
         if (noObstacles()){
             //return home Y
             if (yTravel > 0){
                 while (angle != 180){
-                    right();  
+                    right();
                 }
                 forward();
             }
-            
             else if (yTravel < 0){
                 while (angle != 0){
                     right();
@@ -322,18 +333,16 @@ void returnHome(){
             //return home X
             else if (xTravel > 0){
                 while (angle != 270){
-                    right();  
+                    right();
                 }
                 forward();
             }
-            
             else if (xTravel < 0){
                 while (angle != 90){
                     right();
                 }
                 forward();
             }
-            
             // set angle to 0
             else if (angle != 0){
                 right();
@@ -341,74 +350,69 @@ void returnHome(){
             if (angle == 0){
                 doneReturning = true;
             }
-        }
+        }else{ //(noObstacles == false)
+        avoidObstacles:
         
-        else{//(noObstacles == false)
-            avoidObstacles:
-                //avoid obstacles X
-                while (noObstacles() == false){
-                    right();
-                    forward();
-                    left();
-                }
-                left();
-                
-                //avoid obstacles Y
-                while (noObstacles() == false){
-                    right();
-                    forward();
-                    left();
-                }
+            //avoid obstacles X
+            while (noObstacles() == false){
                 right();
-                            
-                if (noObstacles() == false){
-                    goto avoidObstacles;
-                }
+                forward();
+                left();
+            }
+            left();
+            
+            //avoid obstacles Y
+            while (noObstacles() == false){
+                right();
+                forward();
+                left();
+            }
+            right();
+
+            if (noObstacles() == false){
+                goto avoidObstacles;
+            }
         }
     }
-    
-    Serial.println('e');//Mission accomplished, but nothing was found
+
+    BTserial.println(DONE_RIDING_MSG);//Mission accomplished, but nothing was found
 }
 
 void parsing(){
-    if (Serial.available() > 0){
+    if (BTserial.available() > 0){
         static boolean startParsing, readMod;
         static String string_convert;
-        
-        char incomingChar = Serial.read();
-
+        char incomingChar = BTserial.read();
+       
         if (startParsing){
-            if (incomingChar == ','){//sign to start recieving Y package
+            if (incomingChar == ','){
                 X = string_convert.toInt();
                 string_convert = "";
             }
-            else if (incomingChar == ';'){//sign to end  recieving data
+            else if (incomingChar == ';'){
                 startParsing = false;
                 doneParsing = true;
                 Y = string_convert.toInt();
                 string_convert = "";
-            }
-            else{
+            }else{
                 string_convert += incomingChar;
             }
         }
-
+        
         if (readMod){
             readMod = false;
             if (incomingChar == '1'){
                 joystickMode = true;
-            }
-            else{//(incomingChar == '2')
+            }else{ //(incomingChar == '2')
                 joystickMode = false;
             }
         }
         
-        if (incomingChar == '$'){//sign to start recieving data
+        else if (incomingChar == '$'){
             readMod = true;
         }
-        
-        else if (incomingChar == ' '){//sign to start recieving X package
-             startParsing = true;
+        else if (incomingChar == '@'){
+            startParsing = true;
         }
     }
 }
