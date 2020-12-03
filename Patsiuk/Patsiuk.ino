@@ -388,7 +388,7 @@ void returnHome(){
 /*
 *This function parses packets like this '$1@125,-28;',
 *where '1' is mode (1 - joystick, 0 - auto)
-*'125,-28' is joystick X and Y
+*'125,-28' is X and Y
 */
 void parsing(){
     if (BTserial.available() > 0){
