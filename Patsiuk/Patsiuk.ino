@@ -139,8 +139,6 @@ void loop(){
             LEFT_FRONT.smoothTick(dutyL);
             LEFT_BACK.smoothTick(dutyL);
 
-            stopCar();
-
             if (analogRead(METAL_PIN) >= 120){
                 BTserial.flush();
                 BTserial.println(FOUND_MSG);
