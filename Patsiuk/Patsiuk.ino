@@ -385,6 +385,11 @@ void returnHome(){
     BTserial.println(DONE_RIDING_MSG);//Mission accomplished, but nothing was found
 }
 
+/*
+*This function parses packets like this '$1@125,-28;',
+*where '1' is mode (1 - joystick, 0 - auto)
+*'125,-28' is joystick X and Y
+*/
 void parsing(){
     if (BTserial.available() > 0){
         char incomingChar = BTserial.read();
