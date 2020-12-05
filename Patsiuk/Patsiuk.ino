@@ -189,12 +189,10 @@ void loop() {
                     left();
                 }
 
-                if (noObstacles()) {
-                    forward();  
-                } else { //(noObstacles() == false)
-                    avoidObstacles(true);
-                    forward();
+                if (noObstacles() == false) {
+                    avoidObstacles(true); 
                 }
+                forward();
                      
                 if (rightTurn) {
                     right();
@@ -410,7 +408,11 @@ void parsing() {
 
         else if (readMode) {
             readMode = false;
-            joystickMode = incomingChar - '0';
+            if (incomingChar == 1) {
+                joystickMode = true;
+            } else { //(incomingChar == 0)
+                joystickMode = false;
+            }
         }
 
         else if (incomingChar == '$') {
