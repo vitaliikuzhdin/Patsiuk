@@ -5,10 +5,11 @@
 */
 
 /*=============SETTINGS=============*/
-#define timeForRiding 5000           //ms, must be 10 cm
-#define timeForTurning 5000          //ms, must be 90 degrees
-#define minDuty 120                  //motors should start at this speed (0-255)
+#define timeForRiding 240            //ms, must be 10 cm
+#define timeForTurning 1200          //ms, must be 90 degrees
+#define minDuty 140                  //motors should start at this speed (0-MAX_SPEED)
 #define smoothSpeed 50               //ms, time for motors to reach the speed
+#define MAX_SPEED 255                //max motor speed (0-255)
 #define RIGHT_FRONT_DIRECTION NORMAL //motor direcion, NORMAL or REVERSE
 #define RIGHT_BACK_DIRECTION REVERSE //motor direcion, NORMAL or REVERSE
 #define LEFT_FRONT_DIRECTION NORMAL  //motor direcion, NORMAL or REVERSE
@@ -17,7 +18,7 @@
 #define RIGHT_BACK_MODE HIGH         //change if motor is "on brake" (HIGH or LOW)
 #define LEFT_FRONT_MODE HIGH         //change if motor is "on brake" (HIGH or LOW)
 #define LEFT_BACK_MODE HIGH          //change if motor is "on brake" (HIGH or LOW)
-#define MAX_SONAR_DISTANCE 100       //max value to get from sonar sensors (50+)
+#define MAX_SONAR_DISTANCE 34463     //max value to get from sonar sensors
 
 /*==========PINS==========*/
 #define RIGHT_FRONT_PWM 3
@@ -64,10 +65,12 @@ GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, LEFT_BACK_MODE);
 #include <SoftwareSerial.h>
 SoftwareSerial BTserial(RX, TX);
 
+#include <EEPROM.h>
+
 /*==========================GLOBAL VARIABLES==========================*/
 boolean joystickMode, doneParsing, stopCarBool, startParsing, readMode;
-byte timesAvoidedX = 0;
-int angle, xTravel, yTravel, X, Y;
+byte timesAvoidedX;
+int angle, xTravel, yTravel, X, Y, averageNoMetal;
 String stringConvert;
 
 void setup() {
@@ -136,8 +139,8 @@ void loop() {
             int dutyR = Y + X;
             int dutyL = Y - X;
 
-            dutyR = constrain(dutyR, -255, 255);
-            dutyL = constrain(dutyL, -255, 255);
+            dutyR = constrain(dutyR, -MAX_SPEED, MAX_SPEED);
+            dutyL = constrain(dutyL, -MAX_SPEED, MAX_SPEED);
 
             RIGHT_FRONT.smoothTick(dutyR);
             RIGHT_BACK.smoothTick(dutyR);
@@ -159,9 +162,6 @@ void loop() {
             yTravel = 0;
             angle = 0;
             boolean rightTurn = false;
-            boolean doneFirstTurn = false;
-            boolean doneGoingForward = false;
-            byte timesAvoidedX = 0;
 
             right();
             for (unsigned int i = Y * 10 + 1; i > 0; i--) {
@@ -174,31 +174,26 @@ void loop() {
                             } else { //(timesAvoidedX)
                                 timesAvoidedX--;
                             }
-                        } else { // (noObstacles == false)
+                        } else { //(noObstacles == false)
                             avoidObstacles(true);
                         }
                     } else { //(stopCarBool)
                         stopCar();
-                        Serial.println(FOUND_MSG);
                     }
                 }
                 timesAvoidedX = 0;
                 
-                if (doneFirstTurn == false){
-                    if (rightTurn) {
-                        right();
-                    } else { //(rightTurn == false)
-                        left();
-                    }
-                    doneFirstTurn = true;
+                if (rightTurn) {
+                    right();
+                } else { //(rightTurn == false)
+                    left();
                 }
 
-                if (doneGoingForward == false){
-                    if (noObstacles()) {
-                        forward();  
-                    } else { //(noObstacles() == false)
-                        avoidObstacles(true);
-                    }
+                if (noObstacles()) {
+                    forward();  
+                } else { //(noObstacles() == false)
+                    avoidObstacles(true);
+                    forward();
                 }
                      
                 if (rightTurn) {
@@ -211,7 +206,11 @@ void loop() {
             }
             if (stopCarBool == false){
                 returnHome();
-                stopCar();  
+                stopCar();
+                
+                if (averageNoMetal != EEPROM.read(0)) {
+                    EEPROM.update(0, averageNoMetal);
+                }  
             }
         }
     }
@@ -325,10 +324,10 @@ boolean noObstacles() {
 }
 
 void right() {
-    RIGHT_FRONT.setSpeed(-255);
-    RIGHT_BACK.setSpeed(-255);
-    LEFT_FRONT.setSpeed(255);
-    LEFT_BACK.setSpeed(255);
+    RIGHT_FRONT.setSpeed(-MAX_SPEED);
+    RIGHT_BACK.setSpeed(-MAX_SPEED);
+    LEFT_FRONT.setSpeed(MAX_SPEED);
+    LEFT_BACK.setSpeed(MAX_SPEED);
 
     angle += 90;
     if (angle == 360) {
@@ -339,10 +338,10 @@ void right() {
 }
 
 void left() {
-    RIGHT_FRONT.setSpeed(255);
-    RIGHT_BACK.setSpeed(255);
-    LEFT_FRONT.setSpeed(-255);
-    LEFT_BACK.setSpeed(-255);
+    RIGHT_FRONT.setSpeed(MAX_SPEED);
+    RIGHT_BACK.setSpeed(MAX_SPEED);
+    LEFT_FRONT.setSpeed(-MAX_SPEED);
+    LEFT_BACK.setSpeed(-MAX_SPEED);
 
     angle -= 90;
     if (angle == 360) {
@@ -353,10 +352,10 @@ void left() {
 }
 
 void forward() {
-    RIGHT_FRONT.setSpeed(255);
-    RIGHT_BACK.setSpeed(255);
-    LEFT_FRONT.setSpeed(255);
-    LEFT_BACK.setSpeed(255);
+    RIGHT_FRONT.setSpeed(MAX_SPEED);
+    RIGHT_BACK.setSpeed(MAX_SPEED);
+    LEFT_FRONT.setSpeed(MAX_SPEED);
+    LEFT_BACK.setSpeed(MAX_SPEED);
 
     if (angle == 0 or angle == 90) {
         yTravel++;
@@ -365,9 +364,13 @@ void forward() {
     }
 
     for (unsigned int i = 0; i < timeForRiding; i++) {
-        if (analogRead(METAL_PIN) > 120) {
+        int metalRead = analogRead(METAL_PIN);
+        
+        if (metalRead > EEPROM.read(0)) {
             BTserial.println(FOUND_MSG);//Found!
             stopCarBool = true;
+        } else {
+            averageNoMetal = (averageNoMetal + metalRead) / 2;
         }
 
         delay(1);
@@ -382,9 +385,9 @@ void stopCar() {
 }
 
 /*
-        This function reads packets like this '$1@125,-28;',
-        where '1' is mode (1 - joystick, 0 - auto)
-        '125,-28' is X and Y
+* This function reads packets like this '$1@125,-28;',
+* where '1' is mode (1 - joystick, 0 - auto)
+* '125,-28' is X and Y
 */
 void parsing() {
     if (BTserial.available() > 0) {
@@ -407,7 +410,11 @@ void parsing() {
 
         else if (readMode) {
             readMode = false;
-            joystickMode = incomingChar;
+            if (incomingChar == 1) {
+                joystickMode = true;
+            } else { //(incomingChar == 0)
+                joystickMode = false;
+            }
         }
 
         else if (incomingChar == '$') {
