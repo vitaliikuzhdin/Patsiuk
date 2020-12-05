@@ -7,7 +7,7 @@
 /*=============SETTINGS=============*/
 #define timeForRiding 240            //ms, must be 10 cm
 #define timeForTurning 1200          //ms, must be 90 degrees
-#define minDuty 140                  //motors should start at this speed (0-MAX_SPEED)
+#define minDuty 140                  //motors should start at this speed (0-255)
 #define smoothSpeed 50               //ms, time for motors to reach the speed
 #define MAX_SPEED 255                //max motor speed (0-255)
 #define RIGHT_FRONT_DIRECTION NORMAL //motor direcion, NORMAL or REVERSE
