@@ -147,7 +147,7 @@ void loop() {
             LEFT_FRONT.smoothTick(dutyL);
             LEFT_BACK.smoothTick(dutyL);
 
-            if (analogRead(METAL_PIN) >= 120) {
+            if (analogRead(METAL_PIN) >= EEPROM.read(0)) {
                 BTserial.flush();
                 BTserial.println(FOUND_MSG);
             } else { //(analogRead(METAL_PIN) < 120)
@@ -171,7 +171,7 @@ void loop() {
                         if (noObstacles()) {
                             if (timesAvoidedX == 0) {
                                 forward();
-                            } else { //(timesAvoidedX)
+                            } else { //(timesAvoidedX > 0)
                                 timesAvoidedX--;
                             }
                         } else { //(noObstacles == false)
@@ -410,11 +410,7 @@ void parsing() {
 
         else if (readMode) {
             readMode = false;
-            if (incomingChar == 1) {
-                joystickMode = true;
-            } else { //(incomingChar == 0)
-                joystickMode = false;
-            }
+            joystickMode = incomingChar - '0';
         }
 
         else if (incomingChar == '$') {
