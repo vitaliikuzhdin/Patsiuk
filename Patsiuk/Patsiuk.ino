@@ -62,10 +62,10 @@ GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, RIGHT_BACK_MODE);
 GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, LEFT_FRONT_MODE);
 GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, LEFT_BACK_MODE);
 
-#include <SoftwareSerial.h>
+#include <SoftwareSerial.h>//documentation: https://www.arduino.cc/en/Reference/softwareSerial
 SoftwareSerial BTserial(RX, TX);
 
-#include <EEPROM.h>
+#include <EEPROM.h>//documentation: https://www.arduino.cc/en/Reference/EEPROM
 
 /*==========================GLOBAL VARIABLES==========================*/
 boolean joystickMode, doneParsing, stopCarBool, startParsing, readMode;
