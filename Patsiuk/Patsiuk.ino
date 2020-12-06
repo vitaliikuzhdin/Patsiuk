@@ -22,7 +22,7 @@
 
 /*==========PINS==========*/
 #define RIGHT_FRONT_PWM 3
-#define RIGHT_FRONT_D 2
+#define RIGHT_FRONT_D A0
 
 #define RIGHT_BACK_PWM 10
 #define RIGHT_BACK_D A4
@@ -41,7 +41,7 @@
 #define LEFT_ECHO 13
 #define LEFT_SONAR_VCC 8
 
-#define RX A2
+#define RX 2
 #define TX A1
 
 #define METAL_PIN A5
@@ -67,11 +67,15 @@ SoftwareSerial BTserial(RX, TX);
 
 #include <EEPROM.h>//documentation: https://www.arduino.cc/en/Reference/EEPROM
 
+#include <setjmp.h>
+
 /*==========================GLOBAL VARIABLES==========================*/
 boolean joystickMode, doneParsing, stopCarBool, startParsing, readMode;
 byte timesAvoidedX;
 int angle, xTravel, yTravel, X, Y, averageNoMetal;
 String stringConvert;
+
+jmp_buf startLoop;
 
 void setup() {
     BTserial.begin(9600);
@@ -128,9 +132,15 @@ void setup() {
     RIGHT_BACK.setSmoothSpeed(smoothSpeed);
     LEFT_FRONT.setSmoothSpeed(smoothSpeed);
     LEFT_BACK.setSmoothSpeed(smoothSpeed);
+    
+    interrupts();
+    attachInterrupt(digitalPinToInterrupt(RX), recieveData, FALLING);
+
+    jmp_buf buf;
 }
 
 void loop() {
+    setjmp(buf);
     parsing();
     if (doneParsing) {
         doneParsing = false;
@@ -147,7 +157,7 @@ void loop() {
             LEFT_FRONT.smoothTick(dutyL);
             LEFT_BACK.smoothTick(dutyL);
 
-            if (analogRead(METAL_PIN) >= EEPROM.read(0)) {
+            if (analogRead(METAL_PIN) >= EEPROM.read(0)) { 
                 BTserial.flush();
                 BTserial.println(FOUND_MSG);
             } else { //(analogRead(METAL_PIN) < 120)
@@ -208,10 +218,15 @@ void loop() {
                 
                 if (averageNoMetal != EEPROM.read(0)) {
                     EEPROM.update(0, averageNoMetal);
-                }  
+                }
             }
         }
     }
+}
+
+void recieveData() {
+    noInterrupts();
+    longjmp(buf, 1);
 }
 
 void avoidObstacles(boolean returnToOriginalY){
@@ -389,6 +404,7 @@ void stopCar() {
 */
 void parsing() {
     if (BTserial.available() > 0) {
+        doneParsing = false;
         char incomingChar = BTserial.read();
 
         if (startParsing) {
@@ -401,6 +417,7 @@ void parsing() {
                 stringConvert = "";
                 startParsing = false;
                 doneParsing = true;
+                interrupts();
             } else {
                 stringConvert += incomingChar;
             }
