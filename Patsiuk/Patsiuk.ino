@@ -7,9 +7,9 @@
 /*=============SETTINGS=============*/
 #define timeForRiding 240            //ms, must be 10 cm
 #define timeForTurning 1200          //ms, must be 90 degrees
-#define minDuty 140                  //motors should start at this speed (0-255)
+#define minDuty 140                  //motors should start at this speed (1-255)
 #define smoothSpeed 50               //ms, time for motors to reach the speed
-#define MAX_SPEED 255                //max motor speed (0-255)
+#define MAX_SPEED 255                //max motor speed (1-255)
 #define RIGHT_FRONT_DIRECTION NORMAL //motor direcion, NORMAL or REVERSE
 #define RIGHT_BACK_DIRECTION REVERSE //motor direcion, NORMAL or REVERSE
 #define LEFT_FRONT_DIRECTION NORMAL  //motor direcion, NORMAL or REVERSE
@@ -18,7 +18,7 @@
 #define RIGHT_BACK_MODE HIGH         //change if motor is "on brake" (HIGH or LOW)
 #define LEFT_FRONT_MODE HIGH         //change if motor is "on brake" (HIGH or LOW)
 #define LEFT_BACK_MODE HIGH          //change if motor is "on brake" (HIGH or LOW)
-#define MAX_SONAR_DISTANCE 34463     //max value to get from sonar sensors
+#define MIN_METAL_VAL 120            //metal detector value, when there is no metal
 
 /*==========PINS==========*/
 #define RIGHT_FRONT_PWM 3
@@ -53,8 +53,8 @@
 
 /*==================================LIBRARIES==================================*/
 #include <NewPing.h>//documentation: https://bitbucket.org/teckel12/arduino-new-ping/wiki/Home
-NewPing RIGHT_SONAR(RIGHT_TRIG, RIGHT_ECHO, MAX_SONAR_DISTANCE);
-NewPing LEFT_SONAR(LEFT_TRIG, LEFT_ECHO, MAX_SONAR_DISTANCE);
+NewPing RIGHT_SONAR(RIGHT_TRIG, RIGHT_ECHO, 34463);
+NewPing LEFT_SONAR(LEFT_TRIG, LEFT_ECHO, 34463);
 
 #include <GyverMotor.h>//documentation: https://alexgyver.ru/gyvermotor/
 GMotor RIGHT_FRONT(DRIVER2WIRE, RIGHT_FRONT_D, RIGHT_FRONT_PWM, RIGHT_FRONT_MODE);
@@ -65,7 +65,7 @@ GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, LEFT_BACK_MODE);
 #include <SoftwareSerial.h>//documentation: https://www.arduino.cc/en/Reference/softwareSerial
 SoftwareSerial BTserial(RX, TX);
 
-/*==========================GLOBAL VARIABLES==========================*/
+/*=============GLOBAL VARIABLES=============*/
 
 //PARSING
 boolean doneParsing, startParsing, readMode;
@@ -149,6 +149,8 @@ void loop() {
             angle = 0;
             stopCarBool = false;
             avoidedObstacles = false;
+            timesAvoidedX = 0;
+            timesAvoidedY = 0;
 
         if (joystickMode) {
             int dutyR = Y + X;
@@ -162,10 +164,10 @@ void loop() {
             LEFT_FRONT.smoothTick(dutyL);
             LEFT_BACK.smoothTick(dutyL);
 
-            if (analogRead(METAL_PIN) >= 120) { 
+            if (analogRead(METAL_PIN) >= MIN_METAL_VAL) { 
                 BTserial.flush();
                 BTserial.println(FOUND_MSG);
-            } else { //(analogRead(METAL_PIN) < 120)
+            } else { //(analogRead(METAL_PIN) < MIN_METAL_VAL)
                 BTserial.flush();
                 BTserial.println(NOT_FOUND_MSG);
             }
@@ -194,11 +196,14 @@ void loop() {
                                     left();
                                 }
                                 X = xDuplicate;
+                                Y--;
                             }
                         
                         } else { //(Y == 0) done riding, return home
                             if (doneReturning == false) {
                                 returnHome();
+                                Serial.println(DONE_RIDING_MSG);
+                                stopCar();
                             }
                         }
                     } else { //(avoidedObstacles)
@@ -218,26 +223,19 @@ void loop() {
                         }
                     }
                 } else { //noObstacles() == false
-                    avoidObstacles();
+                    right();
+                    forward();
+                    left();
+                    timesAvoidedY++;
                 }   
             } else { //(stopCarBool)
                 stopCar();
                 Serial.println(FOUND_MSG);
                 doneParsing = false;  
             }
-            if (stopCarBool == false) {
-                Serial.println(DONE_RIDING_MSG);
-            }
         }
         doneParsing = false;
     }
-}
-
-void avoidObstacles(){
-    right();
-    forward();
-    left();
-    timesAvoidedY++;
 }
 
 void returnHome() {
@@ -342,11 +340,11 @@ void forward() {
     for (unsigned int i = 0; i < timeForRiding; i++) {
         int metalRead = analogRead(METAL_PIN);
         
-        if (metalRead > 120) {
+        if (metalRead > MIN_METAL_VAL) {
             BTserial.println(FOUND_MSG);//Found!
             stopCarBool = true;
         }
-        
+
         delay(1);
     }
 }
