@@ -41,7 +41,7 @@
 #define LEFT_ECHO 13
 #define LEFT_SONAR_VCC 8
 
-#define RX A2
+#define RX A0
 #define TX A1
 
 #define METAL_PIN A5
@@ -65,13 +65,23 @@ GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, LEFT_BACK_MODE);
 #include <SoftwareSerial.h>//documentation: https://www.arduino.cc/en/Reference/softwareSerial
 SoftwareSerial BTserial(RX, TX);
 
-#include <EEPROM.h>//documentation: https://www.arduino.cc/en/Reference/EEPROM
-
 /*==========================GLOBAL VARIABLES==========================*/
-boolean joystickMode, doneParsing, stopCarBool, startParsing, readMode;
-byte timesAvoidedX;
-int angle, xTravel, yTravel, X, Y, averageNoMetal;
+
+//PARSING
+boolean doneParsing, startParsing, readMode;
 String stringConvert;
+
+//RIDING
+boolean joystickMode, stopCarBool;
+int X, xDuplicate, Y;
+
+//AVOIDING
+byte timesAvoidedX, timesAvoidedY;
+boolean avoidedObstacles;
+
+//RETURNING HOME
+boolean doneReturning;
+int angle, xTravel, yTravel;
 
 void setup() {
     BTserial.begin(9600);
@@ -133,7 +143,12 @@ void setup() {
 void loop() {
     parsing();
     if (doneParsing) {
-        doneParsing = false;
+            BTserial.println(NOT_FOUND_MSG);
+            xTravel = 0;
+            yTravel = 0;
+            angle = 0;
+            stopCarBool = false;
+            avoidedObstacles = false;
 
         if (joystickMode) {
             int dutyR = Y + X;
@@ -147,7 +162,7 @@ void loop() {
             LEFT_FRONT.smoothTick(dutyL);
             LEFT_BACK.smoothTick(dutyL);
 
-            if (analogRead(METAL_PIN) >= EEPROM.read(0)) {
+            if (analogRead(METAL_PIN) >= 120) { 
                 BTserial.flush();
                 BTserial.println(FOUND_MSG);
             } else { //(analogRead(METAL_PIN) < 120)
@@ -156,145 +171,108 @@ void loop() {
             }
 
         } else { //(joystickMode == false)
-            BTserial.println(NOT_FOUND_MSG);
-            stopCarBool = false;
-            xTravel = 0;
-            yTravel = 0;
-            angle = 0;
-            boolean rightTurn = false;
-
-            right();
-            for (unsigned int i = Y * 10 + 1; i > 0; i--) {
-                for (unsigned int j = X * 10 + 1; j > 0; j--) {
-                    timesAvoidedX = 0;
-                    if (stopCarBool == false) {
-                        if (noObstacles()) {
-                            if (timesAvoidedX == 0) {
-                                forward();
-                            } else { //(timesAvoidedX > 0)
-                                timesAvoidedX--;
+            if (stopCarBool == false) {
+                if (noObstacles()) {
+                    if (avoidedObstacles == false) {
+                        if (Y > 0) {
+                            if (X > 0) {
+                                if (timesAvoidedX == 0) {
+                                    forward();
+                                } else {
+                                    timesAvoidedX--;  
+                                }
+                                X--;
+                            } else { //(X == 0) change to the next lane
+                                timesAvoidedX = 0;
+                                if (Y % 2 == 0) { //Y is even
+                                    right();
+                                    forward();
+                                    right();
+                                } else { //(Y % 2 != 0) Y is odd
+                                    left();
+                                    forward();
+                                    left();
+                                }
+                                X = xDuplicate;
                             }
-                        } else { //(noObstacles == false)
-                            avoidObstacles(true);
+                        
+                        } else { //(Y == 0) done riding, return home
+                            if (doneReturning == false) {
+                                returnHome();
+                            }
                         }
-                    } else { //(stopCarBool)
-                        stopCar();
+                    } else { //(avoidedObstacles)
+                        if (timesAvoidedY > 0) {
+                            if (angle != 270) {
+                                left();
+                            } else {
+                                forward();
+                                timesAvoidedY--;
+                            }
+                        } else { //(timesAvoidedY == 0)
+                            if (angle != 0) {
+                                right();
+                            } else {
+                                avoidedObstacles = false;
+                            }
+                        }
                     }
-                }
-                timesAvoidedX = 0;
-                
-                if (rightTurn) {
-                    right();
-                } else { //(rightTurn == false)
-                    left();
-                }
-
-                if (noObstacles() == false) {
-                    avoidObstacles(true); 
-                }
-                forward();
-                     
-                if (rightTurn) {
-                    right();
-                } else { //(rightTurn == false)
-                    left();
-                }
-                
-                rightTurn = !rightTurn;
-            }
-            if (stopCarBool == false){
-                returnHome();
+                } else { //noObstacles() == false
+                    avoidObstacles();
+                }   
+            } else { //(stopCarBool)
                 stopCar();
-                
-                if (averageNoMetal != EEPROM.read(0)) {
-                    EEPROM.update(0, averageNoMetal);
-                }  
+                Serial.println(FOUND_MSG);
+                doneParsing = false;  
+            }
+            if (stopCarBool == false) {
+                Serial.println(DONE_RIDING_MSG);
             }
         }
+        doneParsing = false;
     }
 }
 
-void avoidObstacles(boolean returnToOriginalY){
-    byte timesAvoidedY = 0;
-    
-    avoidObstacles:
-        //avoid obstacles X
-          while (noObstacles() == false) {
-              right();
-              forward();
-              left();
-              timesAvoidedX++;
-          }
-          left();
-
-          //avoid obstacles Y
-          while (noObstacles() == false) {
-              right();
-              forward();
-              left();
-              timesAvoidedY++;
-          }
-          right();
-
-          if (noObstacles() == false) {
-              goto avoidObstacles;
-          }
-          else if (returnToOriginalY){
-              left();
-              for (byte i = 0; i < timesAvoidedY; i++) { //return to original Y
-                  forward();
-              }
-              right();
-          }
+void avoidObstacles(){
+    right();
+    forward();
+    left();
+    timesAvoidedY++;
 }
 
 void returnHome() {
-    boolean doneReturning = false;
-    while (doneReturning == false) {
-        if (noObstacles()) {
-
-            //return home Y
-            if (yTravel > 0) {
-                while (angle != 180) {
-                    right();
-                }
-                forward();
-            }
-            else if (yTravel < 0) {
-                while (angle != 0) {
-                    right();
-                }
-                forward();
-            }
-
-            //return home X
-            else if (xTravel > 0) {
-                while (angle != 270) {
-                    right();
-                }
-                forward();
-            }
-            else if (xTravel < 0) {
-                while (angle != 90) {
-                    right();
-                }
-                forward();
-            }
-
-            // set angle to 0
-            else if (angle != 0) {
-                while (angle != 0) {
-                    right();
-                }
-                doneReturning = true;
-            }
-
-        } else { //(noObstacles == false)
-            avoidObstacles(false);
+    //return home Y
+    if (yTravel > 0) {
+        if (angle != 180) {
+            right();
+        } else {
+            forward();  
         }
     }
-
-    BTserial.println(DONE_RIDING_MSG);//Mission accomplished, but nothing was found
+    else if (yTravel < 0) {
+        if (angle != 0) {
+            right();
+        } else {
+            forward();
+        }
+    }
+    //return home X
+    else if (yTravel < 0) {
+        if (angle != 270) {
+            right();
+        } else {
+            forward();  
+        }
+    }
+    else if (xTravel > 0) {
+        if (angle != 270) {
+            right();  
+        } else {
+            forward();
+        }
+    } else {
+        doneReturning = true;
+    }
 }
 
 boolean noObstacles() {
@@ -364,13 +342,11 @@ void forward() {
     for (unsigned int i = 0; i < timeForRiding; i++) {
         int metalRead = analogRead(METAL_PIN);
         
-        if (metalRead > EEPROM.read(0)) {
+        if (metalRead > 120) {
             BTserial.println(FOUND_MSG);//Found!
             stopCarBool = true;
-        } else {
-            averageNoMetal = (averageNoMetal + metalRead) / 2;
         }
-
+        
         delay(1);
     }
 }
@@ -383,12 +359,13 @@ void stopCar() {
 }
 
 /*
-* This function reads packets like this '$1@125,-28;',
-* where '1' is mode (1 - joystick, 0 - auto)
-* '125,-28' is X and Y
+* This function reads packets like this '$125,-28@1;',
+* where '125,-28' is X and Y
+* '1' is mode (1 - joystick, 0 - auto)
 */
 void parsing() {
     if (BTserial.available() > 0) {
+        doneParsing = false;
         char incomingChar = BTserial.read();
 
         if (startParsing) {
@@ -396,11 +373,11 @@ void parsing() {
                 X = stringConvert.toInt();
                 stringConvert = "";
             }
-            else if (incomingChar == ';') {
+            else if (incomingChar == '@') {
                 Y = stringConvert.toInt();
                 stringConvert = "";
                 startParsing = false;
-                doneParsing = true;
+                readMode = true;
             } else {
                 stringConvert += incomingChar;
             }
@@ -408,18 +385,19 @@ void parsing() {
 
         else if (readMode) {
             readMode = false;
-            if (incomingChar == 1) {
-                joystickMode = true;
-            } else { //(incomingChar == 0)
-                joystickMode = false;
+            joystickMode = incomingChar - '0';
+            if (joystickMode == false) {
+                X = X * 10 + 1;
+                Y = Y * 10 + 1;
+                xDuplicate = X;
             }
         }
 
         else if (incomingChar == '$') {
-            readMode = true;
-        }
-        else if (incomingChar == '@') {
             startParsing = true;
+        }
+        else if (incomingChar == ';') {
+            doneParsing = true;
         }
     }
 }
