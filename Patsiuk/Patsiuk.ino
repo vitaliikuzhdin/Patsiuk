@@ -11,9 +11,9 @@
 #define smoothSpeed 50               //ms, time for motors to reach the speed
 #define MAX_SPEED 255                //max motor speed (1-255)
 #define RIGHT_FRONT_DIRECTION NORMAL //motor direcion, NORMAL or REVERSE
-#define RIGHT_BACK_DIRECTION REVERSE //motor direcion, NORMAL or REVERSE
+#define RIGHT_BACK_DIRECTION NORMAL  //motor direcion, NORMAL or REVERSE
 #define LEFT_FRONT_DIRECTION NORMAL  //motor direcion, NORMAL or REVERSE
-#define LEFT_BACK_DIRECTION REVERSE  //motor direcion, NORMAL or REVERSE
+#define LEFT_BACK_DIRECTION NORMAL   //motor direcion, NORMAL or REVERSE
 #define RIGHT_FRONT_MODE HIGH        //change if motor is "on brake" (HIGH or LOW)
 #define RIGHT_BACK_MODE HIGH         //change if motor is "on brake" (HIGH or LOW)
 #define LEFT_FRONT_MODE HIGH         //change if motor is "on brake" (HIGH or LOW)
