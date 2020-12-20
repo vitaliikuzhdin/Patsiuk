@@ -229,7 +229,7 @@ void loop() {
                 }   
             } else { //(stopCarBool)
                 stopCar();
-                Serial.println(FOUND_MSG);
+                Serial.println(pgm_read_byte(&FOUND_MSG));
                 doneParsing = false;  
             }
         }
