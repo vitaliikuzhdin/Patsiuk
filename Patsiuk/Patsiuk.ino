@@ -18,7 +18,6 @@
 #define RIGHT_BACK_MODE HIGH         //change if motor is "on brake" (HIGH or LOW)
 #define LEFT_FRONT_MODE HIGH         //change if motor is "on brake" (HIGH or LOW)
 #define LEFT_BACK_MODE HIGH          //change if motor is "on brake" (HIGH or LOW)
-#define MIN_METAL_VAL 120            //metal detector value, when there is no metal
 
 /*==========PINS==========*/
 #define RIGHT_FRONT_PWM 3
@@ -43,10 +42,10 @@
 
 #define METAL_PIN A5
 
-/*========MESSAGES========*/
-#define FOUND_MSG 'Y'
-#define NOT_FOUND_MSG 'n'
-#define DONE_RIDING_MSG 'e'
+/*=================MESSAGES=================*/
+const char FOUND_MSG[] PROGMEM = {'Y'};
+const char NOT_FOUND_MSG[] PROGMEM = {'n'};
+const char DONE_RIDING_MSG[] PROGMEM = {'e'};
 
 /*==================================LIBRARIES==================================*/
 #include <NewPing.h>//documentation: https://bitbucket.org/teckel12/arduino-new-ping/wiki/Home
@@ -77,8 +76,11 @@ boolean avoidedObstacles;
 boolean doneReturning;
 int angle, xTravel, yTravel;
 
+//METAL DETECTOR
+unsigned int smallestMetal;
+
 void setup() {
-    BTserial.begin(9600);
+    Serial.begin(9600);
 
     //D9 and D10 62.5 kHz PWM
     TCCR1A = 0b00000001;
@@ -132,12 +134,15 @@ void setup() {
     RIGHT_BACK.setSmoothSpeed(smoothSpeed);
     LEFT_FRONT.setSmoothSpeed(smoothSpeed);
     LEFT_BACK.setSmoothSpeed(smoothSpeed);
+
+    delay(1000);//to charge capacitors on metal detector
+    smallestMetal = analogRead(METAL_PIN);
 }
 
 void loop() {
     parsing();
     if (doneParsing) {
-            BTserial.println(NOT_FOUND_MSG);
+            Serial.println(pgm_read_byte(&NOT_FOUND_MSG));;
             xTravel = 0;
             yTravel = 0;
             angle = 0;
@@ -158,12 +163,12 @@ void loop() {
             LEFT_FRONT.smoothTick(dutyL);
             LEFT_BACK.smoothTick(dutyL);
 
-            if (analogRead(METAL_PIN) >= MIN_METAL_VAL) { 
-                BTserial.flush();
-                BTserial.println(FOUND_MSG);
-            } else { //(analogRead(METAL_PIN) < MIN_METAL_VAL)
-                BTserial.flush();
-                BTserial.println(NOT_FOUND_MSG);
+            if (analogRead(METAL_PIN) >= smallestMetal) { 
+                Serial.flush();
+                Serial.println(pgm_read_byte(&FOUND_MSG));
+            } else { //(analogRead(METAL_PIN) < smallestMetal)
+                Serial.flush();
+                Serial.println(pgm_read_byte(&NOT_FOUND_MSG));
             }
 
         } else { //(joystickMode == false)
@@ -196,7 +201,7 @@ void loop() {
                         } else { //(Y == 0) done riding, return home
                             if (doneReturning == false) {
                                 returnHome();
-                                Serial.println(DONE_RIDING_MSG);
+                                Serial.println(pgm_read_byte(&FOUND_MSG));;
                                 stopCar();
                             }
                         }
@@ -216,7 +221,7 @@ void loop() {
                             }
                         }
                     }
-                } else { //(noObstacles() == false)
+                } else { //noObstacles() == false
                     right();
                     forward();
                     left();
@@ -332,10 +337,9 @@ void forward() {
     }
 
     for (unsigned int i = 0; i < timeForRiding; i++) {
-        int metalRead = analogRead(METAL_PIN);
         
-        if (metalRead > MIN_METAL_VAL) {
-            BTserial.println(FOUND_MSG);//Found!
+        if (analogRead(METAL_PIN) > smallestMetal) {
+            Serial.println(pgm_read_byte(&FOUND_MSG));//Found!
             stopCarBool = true;
         }
 
@@ -356,9 +360,9 @@ void stopCar() {
 * '1' is mode (1 - joystick, 0 - auto)
 */
 void parsing() {
-    if (BTserial.available() > 0) {
+    if (Serial.available() > 0) {
         doneParsing = false;
-        char incomingChar = BTserial.read();
+        char incomingChar = Serial.read();
 
         if (startParsing) {
             if (incomingChar == ',') {
