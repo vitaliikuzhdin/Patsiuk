@@ -142,7 +142,7 @@ void setup() {
 void loop() {
     parsing();
     if (doneParsing) {
-            Serial.println(pgm_read_byte(&NOT_FOUND_MSG));;
+            Serial.println(pgm_read_byte(&NOT_FOUND_MSG));
             xTravel = 0;
             yTravel = 0;
             angle = 0;
