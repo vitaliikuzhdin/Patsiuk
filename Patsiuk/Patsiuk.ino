@@ -41,9 +41,6 @@
 #define LEFT_ECHO 13
 #define LEFT_SONAR_VCC 8
 
-#define RX A0
-#define TX A1
-
 #define METAL_PIN A5
 
 /*========MESSAGES========*/
@@ -61,9 +58,6 @@ GMotor RIGHT_FRONT(DRIVER2WIRE, RIGHT_FRONT_D, RIGHT_FRONT_PWM, RIGHT_FRONT_MODE
 GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, RIGHT_BACK_MODE);
 GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, LEFT_FRONT_MODE);
 GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, LEFT_BACK_MODE);
-
-#include <SoftwareSerial.h>//documentation: https://www.arduino.cc/en/Reference/softwareSerial
-SoftwareSerial BTserial(RX, TX);
 
 /*=============GLOBAL VARIABLES=============*/
 
@@ -222,7 +216,7 @@ void loop() {
                             }
                         }
                     }
-                } else { //noObstacles() == false
+                } else { //(noObstacles() == false)
                     right();
                     forward();
                     left();
