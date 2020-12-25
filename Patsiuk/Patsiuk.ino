@@ -61,19 +61,19 @@ GMotor LEFT_BACK(DRIVER2WIRE, LEFT_BACK_D, LEFT_BACK_PWM, LEFT_BACK_MODE);
 /*=============GLOBAL VARIABLES=============*/
 
 //PARSING
-boolean doneParsing, startParsing, readMode;
+bool doneParsing, startParsing, readMode;
 String stringConvert;
 
 //RIDING
-boolean joystickMode, stopCarBool;
+bool joystickMode, stopCarBool;
 int X, xDuplicate, Y;
 
 //AVOIDING
 byte timesAvoidedX, timesAvoidedY;
-boolean avoidedObstacles;
+bool avoidedObstacles;
 
 //RETURNING HOME
-boolean doneReturning;
+bool doneReturning;
 int angle, xTravel, yTravel;
 
 //METAL DETECTOR
@@ -272,7 +272,7 @@ void returnHome() {
     }
 }
 
-boolean noObstacles() {
+bool noObstacles() {
     stopCar();
 
     unsigned int rightSonarSumm = 0;
