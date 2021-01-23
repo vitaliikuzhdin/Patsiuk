@@ -1,6 +1,6 @@
 /*
 * Sketch for SAM "Patsiuk" project
-* Fully written by Vitalii Kuzhdin (@vitaliy172), 2020
+* Fully written by Vitalii Kuzhdin (@vitaliy172), 2020-2021
 * For more information, look at shematic
 */
 
@@ -79,16 +79,16 @@ int angle, xTravel, yTravel;
 //METAL DETECTOR
 unsigned int smallestMetal;
 
-void setup() {
+void setup(void) {
     Serial.begin(9600);
 
-    //D9 and D10 62.5 kHz PWM
+    //D9 and D10 31.4 kHz phase-corect PWM
     TCCR1A = 0b00000001;
-    TCCR1B = 0b00001001;
+    TCCR1B = 0b00000001;
 
-    //D3 and D11 62.5 kHz PWM
+    //D3 and D11 31.4 kHz phase-corect PWM
     TCCR2B = 0b00000001;
-    TCCR2A = 0b00000011;
+    TCCR2A = 0b00000001;
 
     pinMode(METAL_PIN, INPUT);
 
@@ -139,7 +139,7 @@ void setup() {
     smallestMetal = analogRead(METAL_PIN);
 }
 
-void loop() {
+void loop(void) {
     parsing();
     if (doneParsing) {
             Serial.println(pgm_read_byte(&NOT_FOUND_MSG));
@@ -221,7 +221,7 @@ void loop() {
                             }
                         }
                     }
-                } else { //noObstacles() == false
+                } else { // (noObstacles() == false)
                     right();
                     forward();
                     left();
@@ -237,7 +237,7 @@ void loop() {
     }
 }
 
-void returnHome() {
+void returnHome(void) {
     //return home Y
     if (yTravel > 0) {
         if (angle != 180) {
@@ -272,7 +272,7 @@ void returnHome() {
     }
 }
 
-bool noObstacles() {
+bool noObstacles(void) {
     stopCar();
 
     unsigned int rightSonarSumm = 0;
@@ -296,7 +296,7 @@ bool noObstacles() {
     }
 }
 
-void right() {
+void right(void) {
     RIGHT_FRONT.setSpeed(-MAX_SPEED);
     RIGHT_BACK.setSpeed(-MAX_SPEED);
     LEFT_FRONT.setSpeed(MAX_SPEED);
@@ -310,7 +310,7 @@ void right() {
     delay(timeForTurning);
 }
 
-void left() {
+void left(void) {
     RIGHT_FRONT.setSpeed(MAX_SPEED);
     RIGHT_BACK.setSpeed(MAX_SPEED);
     LEFT_FRONT.setSpeed(-MAX_SPEED);
@@ -324,7 +324,7 @@ void left() {
     delay(timeForTurning);
 }
 
-void forward() {
+void forward(void) {
     RIGHT_FRONT.setSpeed(MAX_SPEED);
     RIGHT_BACK.setSpeed(MAX_SPEED);
     LEFT_FRONT.setSpeed(MAX_SPEED);
@@ -347,7 +347,7 @@ void forward() {
     }
 }
 
-void stopCar() {
+void stopCar(void) {
     RIGHT_FRONT.setSpeed(0);
     RIGHT_BACK.setSpeed(0);
     LEFT_FRONT.setSpeed(0);
@@ -359,7 +359,7 @@ void stopCar() {
 * where '125,-28' is X and Y
 * '1' is mode (1 - joystick, 0 - auto)
 */
-void parsing() {
+void parsing(void) {
     if (Serial.available() > 0) {
         doneParsing = false;
         char incomingChar = Serial.read();
