@@ -5,19 +5,19 @@
 */
 
 /*=============SETTINGS=============*/
-#define timeForRiding 240            //ms, must be 10 cm
-#define timeForTurning 1200          //ms, must be 90 degrees
-#define minDuty 140                  //motors should start at this speed (1-255)
-#define smoothSpeed 50               //ms, time for motors to reach the speed
-#define MAX_SPEED 255                //max motor speed (1-255)
+#define RIDING_TIME           240    //ms, must be 10 cm
+#define TURNING_TIME          1200   //ms, must be 90 degrees
+#define MIN_DUTY              140    //motors should start at this speed (1-255)
+#define SMOOTH_SPEED          50     //ms, time for motors to reach the speed
+#define MAX_SPEED             255    //max motor speed (1-255)
 #define RIGHT_FRONT_DIRECTION NORMAL //motor direcion, NORMAL or REVERSE
-#define RIGHT_BACK_DIRECTION NORMAL  //motor direcion, NORMAL or REVERSE
-#define LEFT_FRONT_DIRECTION NORMAL  //motor direcion, NORMAL or REVERSE
-#define LEFT_BACK_DIRECTION NORMAL   //motor direcion, NORMAL or REVERSE
-#define RIGHT_FRONT_MODE HIGH        //change if motor is "on brake" (HIGH or LOW)
-#define RIGHT_BACK_MODE HIGH         //change if motor is "on brake" (HIGH or LOW)
-#define LEFT_FRONT_MODE HIGH         //change if motor is "on brake" (HIGH or LOW)
-#define LEFT_BACK_MODE HIGH          //change if motor is "on brake" (HIGH or LOW)
+#define RIGHT_BACK_DIRECTION  NORMAL //motor direcion, NORMAL or REVERSE
+#define LEFT_FRONT_DIRECTION  NORMAL //motor direcion, NORMAL or REVERSE
+#define LEFT_BACK_DIRECTION   NORMAL //motor direcion, NORMAL or REVERSE
+#define RIGHT_FRONT_MODE      HIGH   //change if motor is "on brake" (HIGH or LOW)
+#define RIGHT_BACK_MODE       HIGH   //change if motor is "on brake" (HIGH or LOW)
+#define LEFT_FRONT_MODE       HIGH   //change if motor is "on brake" (HIGH or LOW)
+#define LEFT_BACK_MODE        HIGH   //change if motor is "on brake" (HIGH or LOW)
 
 /*==========PINS==========*/
 #define RIGHT_FRONT_PWM 3
@@ -108,7 +108,7 @@ void setup(void) {
     pinMode(LEFT_SONAR_VCC, OUTPUT);
 
     digitalWrite(RIGHT_SONAR_VCC, HIGH);//power for right sonar
-    digitalWrite(LEFT_SONAR_VCC, HIGH); //power for left sonar
+    digitalWrite(LEFT_SONAR_VCC, HIGH); //power for left  sonar
 
     RIGHT_FRONT.setResolution(8);
     RIGHT_BACK.setResolution(8);
@@ -120,20 +120,20 @@ void setup(void) {
     LEFT_FRONT.setDirection(LEFT_FRONT_DIRECTION);
     LEFT_BACK.setDirection(LEFT_BACK_DIRECTION);
 
-    RIGHT_FRONT.setMinDuty(minDuty);
-    RIGHT_BACK.setMinDuty(minDuty);
-    LEFT_FRONT.setMinDuty(minDuty);
-    LEFT_BACK.setMinDuty(minDuty);
+    RIGHT_FRONT.setMinDuty(MIN_DUTY);
+    RIGHT_BACK.setMinDuty(MIN_DUTY);
+    LEFT_FRONT.setMinDuty(MIN_DUTY);
+    LEFT_BACK.setMinDuty(MIN_DUTY);
 
     RIGHT_FRONT.setMode(AUTO);
     RIGHT_BACK.setMode(AUTO);
     LEFT_FRONT.setMode(AUTO);
     LEFT_BACK.setMode(AUTO);
 
-    RIGHT_FRONT.setSmoothSpeed(smoothSpeed);
-    RIGHT_BACK.setSmoothSpeed(smoothSpeed);
-    LEFT_FRONT.setSmoothSpeed(smoothSpeed);
-    LEFT_BACK.setSmoothSpeed(smoothSpeed);
+    RIGHT_FRONT.setSmoothSpeed(SMOOTH_SPEED);
+    RIGHT_BACK.setSmoothSpeed(SMOOTH_SPEED);
+    LEFT_FRONT.setSmoothSpeed(SMOOTH_SPEED);
+    LEFT_BACK.setSmoothSpeed(SMOOTH_SPEED);
 
     delay(1000);//to charge capacitors on metal detector
     smallestMetal = analogRead(METAL_PIN);
@@ -307,7 +307,7 @@ void right(void) {
         angle = 0;
     }
 
-    delay(timeForTurning);
+    delay(TURNING_TIME);
 }
 
 void left(void) {
@@ -321,7 +321,7 @@ void left(void) {
         angle = 0;
     }
 
-    delay(timeForTurning);
+    delay(TURNING_TIME);
 }
 
 void forward(void) {
@@ -336,7 +336,7 @@ void forward(void) {
         xTravel--;
     }
 
-    for (unsigned int i = 0; i < timeForRiding; i++) {
+    for (unsigned int i = 0; i < RIDING_TIME; i++) {
         
         if (analogRead(METAL_PIN) > smallestMetal) {
             Serial.println(pgm_read_byte(&FOUND_MSG));//Found!
