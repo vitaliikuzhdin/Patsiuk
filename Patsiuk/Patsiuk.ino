@@ -48,11 +48,11 @@ const char NOT_FOUND_MSG[] PROGMEM = {'n'};
 const char DONE_RIDING_MSG[] PROGMEM = {'e'};
 
 /*==================================LIBRARIES==================================*/
-#include <NewPing.h>//documentation: https://bitbucket.org/teckel12/arduino-new-ping/wiki/Home
+#include <NewPing.h>// documentation: bitbucket.org/teckel12/arduino-new-ping/wiki/Home
 NewPing RIGHT_SONAR(RIGHT_TRIG, RIGHT_ECHO, 34463);
 NewPing LEFT_SONAR(LEFT_TRIG, LEFT_ECHO, 34463);
 
-#include <GyverMotor.h>//documentation: https://alexgyver.ru/gyvermotor/
+#include <GyverMotor.h>// documentation: alexgyver.ru/gyvermotor
 GMotor RIGHT_FRONT(DRIVER2WIRE, RIGHT_FRONT_D, RIGHT_FRONT_PWM, RIGHT_FRONT_MODE);
 GMotor RIGHT_BACK(DRIVER2WIRE, RIGHT_BACK_D, RIGHT_BACK_PWM, RIGHT_BACK_MODE);
 GMotor LEFT_FRONT(DRIVER2WIRE, LEFT_FRONT_D, LEFT_FRONT_PWM, LEFT_FRONT_MODE);
