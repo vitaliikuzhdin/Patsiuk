@@ -1,6 +1,6 @@
 /*
 * Sketch for SAM "Patsiuk" project
-* Fully written by Vitalii Kuzhdin (@vitaliy172), 2020-2021
+* Fully written by Vitalii Kuzhdin (@0purple), vitaliikuzhdin@protonmail.com, 2020-2021
 * For more information, look at shematic
 */
 
